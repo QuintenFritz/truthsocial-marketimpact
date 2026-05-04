@@ -1,0 +1,78 @@
+# Project-wide configuratie. Geen secrets hier — gebruik .env voor API keys.
+
+paths:
+  data_raw: data/raw
+  data_processed: data/processed
+  models: models
+  reports_figures: reports/figures
+
+data:
+  truthsocial:
+    user: "realDonaldTrump"
+    start_date: "2022-02-21"   # Truth Social launch date
+    end_date: null             # null = today
+    output_file: "posts.parquet"
+
+  market:
+    tickers:
+      spx: "^GSPC"
+      spy: "SPY"               # voor intraday access
+      wti: "CL=F"
+      vix: "^VIX"
+      dxy: "DX-Y.NYB"
+    interval: "1d"             # "1d" of "1h" / "5m" voor intraday
+    start_date: "2022-02-01"
+    end_date: null
+
+  fred:
+    risk_free: "DGS3MO"
+    wti_alt: "DCOILWTICO"
+
+# Time windows voor abnormal returns
+windows:
+  - "1h"
+  - "1d"
+  - "3d"
+
+# Text preprocessing
+preprocessing:
+  lowercase: true
+  strip_urls: true
+  strip_mentions: true
+  strip_handles: true
+  min_post_length: 10        # tokens, kortere posts droppen
+
+# Features
+features:
+  tfidf:
+    max_features: 5000
+    ngram_range: [1, 2]
+    min_df: 5
+    max_df: 0.9
+  sentiment:
+    use_finbert: false       # true vereist torch + transformers (extras)
+    model_name: "ProsusAI/finbert"
+
+# Modeling
+modeling:
+  random_state: 42
+  train_test_split: "chronological"   # nooit random op time-series
+  test_size: 0.2
+  cv:
+    type: "time_series"
+    n_splits: 5
+
+  random_forest:
+    n_estimators: 500
+    max_depth: null
+    min_samples_split: 5
+    min_samples_leaf: 2
+    n_jobs: -1
+    class_weight: "balanced"
+
+# Evaluation
+evaluation:
+  classification:
+    threshold_dead_zone: 0.001  # |return| < 0.1% wordt "neutraal"
+  shap:
+    max_samples: 500            # voor explainability plots
