@@ -16,6 +16,8 @@ from pathlib import Path
 
 import click
 import pandas as pd
+import unicodedata
+import ftfy
 
 from src.config import CONFIG, resolve_path
 
@@ -38,6 +40,16 @@ def clean_text(text: str, *, lowercase: bool = True, strip_urls: bool = True,
     """
     if not isinstance(text, str):
         return ""
+    # Fix mojibake EERST (corrupt apostrofs, smart quotes etc.)
+    text = ftfy.fix_text(text)
+    # Daarna normalize voor consistency
+    text = unicodedata.normalize("NFKC", text)
+    # De expliciete replaces kunnen blijven als safety net
+    text = text.replace("\u2019", "'").replace("\u2018", "'")
+    text = text.replace("\u201c", '"').replace("\u201d", '"')
+    text = text.replace("\u2013", "-").replace("\u2014", "-")
+    if lowercase:
+        text = text.lower()
     if lowercase:
         text = text.lower()
     if strip_urls:

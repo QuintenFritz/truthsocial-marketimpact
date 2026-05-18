@@ -68,13 +68,31 @@ def fetch_posts_archive(archive_path: Path | str) -> pd.DataFrame:
     else:
         raise ValueError(f"Onbekend formaat: {path.suffix}")
 
-    # TODO: kolom-mapping aanpassen aan daadwerkelijke archive schema
+    # Schema-mapping: support voor zowel truthbrush als Kaggle-archive kolomnamen
+    rename_map = {
+        # truthbrush API
+        "id": "post_id",
+        "created_at": "timestamp_utc",
+        "content": "text",
+        "favourites_count": "favorites",
+        "reblogs_count": "reposts",
+        "replies_count": "replies",
+        # Kaggle archive (trump_posts_full.csv)
+        "like_count": "favorites",
+        "retruth_count": "reposts",
+        "reply_count": "replies",
+    }
+    df = df.rename(columns={k: v for k, v in rename_map.items() if k in df.columns})
+
     expected_cols = {"post_id", "timestamp_utc", "text"}
     missing = expected_cols - set(df.columns)
     if missing:
         raise ValueError(f"Archive mist verwachte kolommen: {missing}")
 
-    df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], utc=True)
+    # Mixed ISO formats (sommige posts hebben microseconden, andere niet)
+    df["timestamp_utc"] = pd.to_datetime(df["timestamp_utc"], utc=True, format="ISO8601")
+    # Drop posts without text (media-only) — geen TF-IDF mogelijk
+    df = df.dropna(subset=["text"]).reset_index(drop=True)
     df = df.sort_values("timestamp_utc").reset_index(drop=True)
     return df
 
