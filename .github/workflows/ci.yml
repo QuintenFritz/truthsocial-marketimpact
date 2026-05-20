@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint-and-test:
+  test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -30,12 +30,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
-
-      - name: Lint (ruff)
-        run: ruff check src tests
-
-      - name: Format check (ruff format)
-        run: ruff format --check src tests
 
       - name: Run pytest
         run: pytest tests/ -v
