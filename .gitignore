@@ -26,20 +26,23 @@ env/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Data — NEVER commit
-data/raw/*
-data/processed/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+# Data — grote bronbestanden niet committen
+data/raw/trump_truth_archive.csv
+data/raw/posts.parquet
 
-# Models / artifacts
+# Kleine kritische bestanden WEL committen (zie README):
+#   data/raw/market.parquet
+#   data/raw/posts_live.parquet
+#   data/processed/gdelt_news_timing.parquet
+#   data/processed/intraday_*.parquet
+
+# Models — niet committen (reproduceerbaar via notebooks)
 models/
 *.joblib
 *.pkl
 
-# Reports / figures (generated)
-reports/figures/*
-!reports/figures/.gitkeep
+# Reports/figures — WEL committen zodat evaluatoren resultaten kunnen zien
+# (geen uitsluiting meer voor reports/figures/)
 
 # Logs
 *.log

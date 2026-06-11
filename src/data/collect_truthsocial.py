@@ -1,22 +1,21 @@
 """Truth Social posts collector.
 
 We mikken op @realDonaldTrump posts vanaf de Truth Social launch (feb 2022)
-tot vandaag. Twee mogelijke bronnen:
+tot vandaag. We scrapen Truth Social NIET rechtstreeks; we werken uitsluitend
+met publiek beschikbare archieven/mirrors:
 
-1. **truthbrush** (https://github.com/stanfordio/truthbrush) — unofficial Python
-   client. Vereist login credentials. Werk in academische context, niet voor
-   commercieel gebruik.
-2. **trumpstruth.org** archive — heeft een statische JSON/CSV dump die
-   regelmatig wordt geüpdatet. Geen auth nodig.
+1. **Kaggle-archief** — statische CSV-dump van het @realDonaldTrump account.
+   Vormt de historische bulk. Geen auth nodig.
+2. **trumpstruth.org** — externe mirror met RSS-feed voor de laatste posts.
+   De live-aanvulling gebeurt via `src/data/scrape_trumpstruth_rss.py`.
 
-Voor de scriptie: download EERST een complete dump (bv. via trumpstruth.org)
-zodat je niet afhankelijk bent van een werkende scraper midden in week 4.
+Deze module laadt het Kaggle-archief en normaliseert het schema. Voor de
+live-aanvulling: zie `scrape_trumpstruth_rss.py`.
 """
 
 from __future__ import annotations
 
 import logging
-from datetime import date
 from pathlib import Path
 
 import click
@@ -27,28 +26,8 @@ from src.config import CONFIG, resolve_path
 logger = logging.getLogger(__name__)
 
 
-def fetch_posts_truthbrush(
-    user: str,
-    start_date: str | date,
-    end_date: str | date | None = None,
-) -> pd.DataFrame:
-    """Scrape posts via truthbrush.
-
-    TODO: implement na `pip install truthbrush` + login flow.
-    Placeholder die NotImplementedError raised; vervang door echte call.
-
-    Returns
-    -------
-    DataFrame
-        Kolommen: post_id, timestamp_utc, text, reposts, favorites, replies, url.
-    """
-    raise NotImplementedError(
-        "Implementeer truthbrush integratie of gebruik fetch_posts_archive()."
-    )
-
-
 def fetch_posts_archive(archive_path: Path | str) -> pd.DataFrame:
-    """Load posts uit een lokale archive dump (CSV of JSON van trumpstruth.org).
+    """Load posts uit een lokale archive dump (CSV of JSON, Kaggle-export).
 
     Parameters
     ----------
@@ -68,16 +47,11 @@ def fetch_posts_archive(archive_path: Path | str) -> pd.DataFrame:
     else:
         raise ValueError(f"Onbekend formaat: {path.suffix}")
 
-    # Schema-mapping: support voor zowel truthbrush als Kaggle-archive kolomnamen
+    # Schema-mapping: Kaggle-archive kolomnamen → genormaliseerd schema
     rename_map = {
-        # truthbrush API
         "id": "post_id",
         "created_at": "timestamp_utc",
-        "content": "text",
-        "favourites_count": "favorites",
-        "reblogs_count": "reposts",
-        "replies_count": "replies",
-        # Kaggle archive (trump_posts_full.csv)
+        "text": "text",
         "like_count": "favorites",
         "retruth_count": "reposts",
         "reply_count": "replies",
@@ -112,12 +86,14 @@ def main(archive: str | None, output: str | None) -> None:
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    if archive:
-        logger.info("Loading from archive: %s", archive)
-        df = fetch_posts_archive(archive)
-    else:
-        logger.info("Scraping via truthbrush — user=%s start=%s", cfg["user"], cfg["start_date"])
-        df = fetch_posts_truthbrush(cfg["user"], cfg["start_date"], cfg["end_date"])
+    if not archive:
+        raise click.UsageError(
+            "--archive is verplicht: geef het pad naar de Kaggle-archive dump (CSV/JSON). "
+            "Voor live-aanvulling, gebruik scrape_trumpstruth_rss.py."
+        )
+
+    logger.info("Loading from archive: %s", archive)
+    df = fetch_posts_archive(archive)
 
     logger.info("Loaded %d posts. Writing to %s", len(df), out_path)
     df.to_parquet(out_path, index=False)

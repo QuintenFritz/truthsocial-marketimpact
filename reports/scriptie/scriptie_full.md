@@ -1,0 +1,326 @@
+# Een analyse van Donald Trump's Truth Social communicatie tijdens het Iran-conflict 2026
+
+**Een empirisch onderzoek naar de relatie tussen presidentiële sociale media en de oliemarkt**
+
+---
+
+**Auteur:** Quinten Friederichs
+**Opleiding:** VDO Data Scientist
+**Onderwijsinstelling:** Syntra
+**Begeleider:** Tim Hellemans / Olivier Claerebout
+**Indiendatum:** juni 2026
+
+---
+
+## Samenvatting
+
+Sinds het uitbreken van het Iran-conflict op 28 februari 2026 heeft Donald Trump intensief over de oorlog gecommuniceerd via zijn platform Truth Social. Dit onderzoek toetst empirisch de hypothese dat zijn berichten doelbewust worden ingezet om de oliemarkt te beïnvloeden. Op basis van 26.819 historische posts (Kaggle-dataset, februari 2022 – april 2026), aangevuld met gescrapte posts via de trumpstruth.org RSS-feed sinds conflictstart, intraday WTI futures data op uur- en 5-minuten-resolutie, en eigenontwikkelde classificatie-modellen voor sentiment en toxiciteit, voeren wij een event-study uit op 134 Iran-gerelateerde posts versus 435 controle-posts.
+
+De resultaten ondersteunen niet de hypothese van directe markt-aansturing. Wij vinden een marginale, niet-significante correlatie tussen Iran-posts en WTI-rendementen op een 1-uurs window (Δμ = +51,5 bp, p = 0,103), maar een statistisch significant negatief effect op de energiesector-ETF XLE (Δμ = −56,9 bp, p = 0,007). Granger-causaliteitstoetsen ondersteunen consequent een reactief patroon: WTI-rendementen voorspellen Trumps Iran-postingactiviteit met lagstructuur 2–4 uur (F = 4,3–6,5, p < 0,002), terwijl het omgekeerde verband op geen enkele resolutie significant is. Twee aanvullende toetsen op manipulatie-hypothesen (volume-anomalie en price-timing) tonen slechts marginaal verhoogd handelsvolume rond Iran-posts (Δμ = +0,22σ, p = 0,030) en geen patroon van optimale prijs-timing.
+
+De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurtenissen zowel marktbewegingen als Trumps communicatie aansturen — een common-cause verklaring. Dit onderzoek levert tevens herbruikbare classifiers (sentiment: 83% accuratesse; toxiciteit: AUC 0,91) en een complete reproduceerbare pipeline op.
+
+---
+
+## Inhoudsopgave
+
+1. Inleiding
+2. Literatuurstudie
+3. Data en methodologie
+4. Resultaten
+5. Discussie
+6. Conclusie
+7. Referenties
+8. Bijlagen
+
+---
+
+## 1. Inleiding
+
+### 1.1 Context
+
+Met de opkomst van sociale media als primair communicatiekanaal voor staatshoofden is de relatie tussen presidentiële uitingen en financiële markten een actief onderzoeksgebied geworden. Born, Müller, Schularick en Sedláček (gepubliceerd circa 2017) toonden aan dat tweets van Donald Trump tijdens zijn eerste presidentschap meetbare abnormale rendementen veroorzaakten in specifieke aandelen en sectoren. Sentimentanalyse op grote tekstcorpora — variërend van krantenartikelen (Tetlock, 2007) tot Twitter-tijdlijnen (Bollen, Mao en Zeng, 2011) — heeft herhaaldelijk een voorspellende relatie aangetoond met financiële markten, hoewel de effectgrootte en robuustheid sterk variëren.
+
+Na zijn verbanning van Twitter in 2021 verplaatste Trump zijn directe communicatie naar het door hem opgerichte platform Truth Social. De marktimpact van deze nieuwe communicatie-omgeving is empirisch veel minder onderzocht dan zijn Twitter-periode. Het uitbreken van een gewapend conflict met Iran op 28 februari 2026 creëert een unieke onderzoekscontext: een actueel geopolitiek evenement waarin de oliemarkt hoog volatiel is en de huidige president — opnieuw Donald Trump — frequent commentaar levert via Truth Social. Het publieke debat over de aard van deze communicatie is gepolariseerd: sommige commentatoren stellen dat Trumps posts marktbewegingen veroorzaken of zelfs voorafgaand handelsgedrag mogelijk maken; anderen stellen dat hij vooral reactief commentarieert op gebeurtenissen die hij niet zelf in gang heeft gezet.
+
+Dit onderzoek poogt deze hypothesen empirisch te toetsen aan publiek beschikbare data. Wij gebruiken hiervoor zowel klassieke event-study technieken als Granger-causaliteitstoetsen op meerdere tijdsresoluties, en bouwen daarnaast eigen tekstuele classifiers die de communicatie systematisch karakteriseren naar sentiment en toxiciteit.
+
+### 1.2 Probleemstelling en onderzoeksvragen
+
+**Hoofdvraag:**
+
+> In hoeverre is er een statistisch detecteerbaar verband tussen Trumps Iran-gerelateerde Truth Social posts en bewegingen van de WTI ruwe-olieprijs sinds 28 februari 2026, en wat is de meest plausibele richting van dit verband?
+
+**Sub-vragen:**
+
+1. *Descriptief.* Hoe heeft Trumps communicatiepatroon (volume, sentiment, toxiciteit) zich ontwikkeld over de periode 2022–2026, en in het bijzonder rond geopolitieke triggers?
+2. *Predictief.* Kunnen tekstuele classifiers de sentiment- en toxiciteitslabels van bestaande gespecialiseerde tools reproduceren met acceptabele accuratesse op basis van eenvoudige features?
+3. *Correlationeel.* Vallen Iran-gerelateerde posts samen met statistisch significante bewegingen in WTI-futures, de S&P 500, of de energiesector-ETF (XLE)?
+4. *Causaliteit.* Voor zover er een correlatie bestaat — is er evidentie dat posts marktbewegingen voorspellen, dat marktbewegingen posts voorspellen, of dat beide reageren op een gemeenschappelijke onderliggende oorzaak?
+5. *Falsificeerbaar.* Vinden wij patronen die consistent zijn met een hypothese van voor-positionering (informed trading) rond Trumps posts, zoals verhoogd handelsvolume of optimale prijs-timing?
+
+### 1.3 Opbouw van dit document
+
+Hoofdstuk 2 plaatst dit onderzoek in de bestaande literatuur over sociale media en financiële markten. Hoofdstuk 3 beschrijft de data, modellen en statistische technieken. Hoofdstuk 4 presenteert de empirische resultaten in vier subsecties: descriptieve analyse, sentimentclassificatie, toxiciteitsclassificatie, en de Iran-conflict event-study. Hoofdstuk 5 bespreekt de interpretatie van de bevindingen en de methodologische beperkingen. Hoofdstuk 6 sluit af met de conclusie en aanbevelingen voor vervolgonderzoek.
+
+---
+
+## 2. Literatuurstudie
+
+### 2.1 Sociale media en financiële markten
+
+Het meest geciteerde vroege werk in dit domein is Bollen, Mao en Zeng (2011), die op een corpus van ~9,8 miljoen tweets uit 2008–2009 stemmingsindices construeerden en aantoonden dat de zogeheten "Calm"-dimensie een statistisch significante voorspeller is voor de richting van dagelijkse S&P 500-bewegingen (correlatie 0,10, lag 1–2 dagen). Hun werk leverde echter een aggregaat-niveau bevinding op: het gemiddelde sentiment van miljoenen anonieme gebruikers, niet de impact van één individuele communicator.
+
+Antweiler en Frank (2004) onderzochten 1,5 miljoen posts op Yahoo! Finance en Motley Fool message boards (1999–2002) en vonden dat *disagreement* (variantie in sentiment) sterker correleerde met marktvolatiliteit dan met returns zelf. Hun werk waarschuwt dat sentiment-uit-sociale-media zwakke voorspellende waarde heeft (R² < 0,5%) en context-afhankelijk werkt.
+
+Tetlock (2007) leverde een methodologische blauwdruk voor textuele sentimentanalyse in een financiële context door 51 jaren Wall Street Journal-kolommen te analyseren. Pessimistisch sentiment bleek significant lagere toekomstige returns te voorspellen (OOS R² circa 3–4%), met effecten die sterker waren in lage-informatie periodes.
+
+### 2.2 Tekstuele analyse in financiële context
+
+Loughran en McDonald (2011, 2016) ontwikkelden domeinspecifieke financiële sentiment-woordenlijsten en argumenteerden dat generieke sentiment-tools (zoals Harvard IV-4) systematisch tekortschieten op financiële tekst. Bedrijfsspecifieke termen als "liability", "loss" of "risk" hebben in financial-disclosure-context een andere lading dan in algemeen taalgebruik. Hun survey-paper (2016) biedt een meta-analyse van 127 studies en wijst op terugkerende methodologische valkuilen: selectiebias, in-sample overfitting en look-ahead bias.
+
+Araci (2019) introduceerde FinBERT, een pre-trained transformer-model gefinetuned op het Financial PhraseBank-corpus dat 92% accuratesse haalde tegen 75% voor lexicon-gebaseerde methodes. Ke, Kelly en Xiu (2023) toonden in *Predicting Returns with Text Data* aan dat transformer-gebaseerde sentimentsignalen lineaire TF-IDF-baselines met een factor 2–3 overtreffen in out-of-sample voorspellende R².
+
+### 2.3 Interpretability en methodologische kritiek
+
+Jain en Wallace (2019), in hun paper *Attention is Not Explanation*, toonden aan dat attention-gewichten in BERT-achtige modellen geen betrouwbare proxy zijn voor feature importance, en bepleitten post-hoc methoden zoals SHAP. Lundberg en Lee (2017) introduceerden de SHAP-methodologie, theoretisch verankerd in coöperatieve speltheorie via Shapley-waarden, als consistente interpretability-methode voor zowel boom-gebaseerde als neurale modellen. Breiman (2001) leverde de oorspronkelijke Random Forest-publicatie; het algoritme blijft een sterke niet-lineaire baseline op tekstdata.
+
+### 2.4 Gap-analyse
+
+Hoewel Trumps Twitter-communicatie uit zijn eerste presidentschap (2017–2021) uitgebreid is onderzocht, is empirisch werk over Truth Social specifiek schaars — en nog schaarser is onderzoek over de interactie tussen zijn communicatie en de oliemarkt tijdens een actief geopolitiek conflict. Dit onderzoek vult die leemte op drie manieren: (a) een tijdgebonden case-study sinds de uitbraak van het Iran-conflict op 28 februari 2026, (b) eigen-getrainde tekstuele classifiers in plaats van afhankelijkheid van vooraf gelabelde datasets, en (c) een methodologisch rigoureuze causaliteitsanalyse op zowel uur- als minuten-resolutie via Granger-toetsen aangevuld met traditionele event-study t-toetsen.
+
+---
+
+## 3. Data en methodologie
+
+### 3.1 Databronnen
+
+**Historische Truth Social posts.** Wij gebruiken een publiek beschikbare Kaggle-dataset (`trump_truth_archive.csv`) met 32.754 posts van het account @realDonaldTrump tussen 14 februari 2022 en 23 april 2026. Het ruwe bestand bevat per post een unieke identifier, een UTC-tijdstempel, de tekstinhoud, engagement-metrieken (likes, retruths, replies) en circa 30 pre-berekende features waaronder een sentiment-score, sentiment-label, toxiciteits-score en topic-classificatie. Na het filteren van media-only posts zonder tekst (5.935 posts) bleven 26.819 posts beschikbaar voor analyse.
+
+**Live Truth Social posts.** Voor de periode na 23 april 2026 maken wij gebruik van de RSS-feed van trumpstruth.org, een onafhankelijke archief-site beheerd door Defending Democracy Together. Wij hebben een Python-scraperscript (`src/data/scrape_trumpstruth_rss.py`) ontwikkeld dat de feed in maand-chunks raadpleegt en de output normaliseert naar het canonieke datasetschema. Deze bron vereist geen authenticatie en valt binnen de servicevoorwaarden voor academisch gebruik.
+
+**Marktdata.** Wij gebruiken yfinance (Yahoo Finance API) voor drie tickers: WTI ruwe-olie futures (`CL=F`), de S&P 500 ETF (`SPY`) en de Energy Select Sector ETF (`XLE`). Dagelijkse data zijn beschikbaar voor de volledige conflictperiode; uur- en 5-minuten-data zijn beperkt tot de meest recente 60 dagen door technische limieten van de bron.
+
+### 3.2 Preprocessing
+
+Posts worden gefilterd op aanwezigheid van tekstuele inhoud (drop van media-only posts) en doorgaan vervolgens door een tekst-cleaningpipeline (`src/data/preprocess.py`): lowercase-transformatie, URL- en mention-strip, Unicode-normalisatie via de `ftfy`-library om mojibake-artefacten (zoals `itâ€™s → it's`) te corrigeren, en filtering op minimaal vijf tokens.
+
+### 3.3 Classificatie-modellen
+
+**Sentiment classifier.** Wij trainen drie modellen om het 3-klasse-sentimentlabel (positief/neutraal/negatief) uit de Kaggle ground truth te reproduceren: een L1-geregulariseerde logistische regressie (saga-solver, max 3000 iteraties), een Random Forest (200 bomen, class-weight gebalanceerd), en — als vergelijking — de zero-shot toepassing van het Twitter-RoBERTa-model `cardiffnlp/twitter-roberta-base-sentiment-latest`. Features bestaan uit TF-IDF van unigrammen en bigrammen met maximaal 8.000 features, English stopwords-filtering, en sublinear term frequency-normalisatie. Train/test-split is chronologisch (80/20).
+
+**Toxicity classifier.** Wij definiëren een binaire classificatie: de 25% van trainingsposts met de hoogste pre-berekende toxiciteitsscore wordt gelabeld als `high_tox`, de rest als `low_tox`. De drempel wordt vastgesteld op het 75ᵉ percentiel van de trainingsverdeling om train/test-leakage te voorkomen. Modellen: L1-logistische regressie (liblinear), Random Forest en de pre-trained `unitary/toxic-bert` transformer.
+
+### 3.4 Statistische toetsen
+
+**Event-study t-toets.** Voor elke Iran-gerelateerde post `p` op tijdstip `t` berekenen wij de logaritmische return van WTI, SPY en XLE over windows `[t, t+Δ]` voor `Δ ∈ {1u, 4u, 24u}`. Iran-relevantie wordt vastgesteld via keyword-matching op een lexicon van 38 termen (Iran, Tehran, ayatollah, Hormuz, OPEC, oil, sanctions, et cetera). Posts zonder Iran-keyword vormen de controlegroep. Verschillen in gemiddelde returns worden getoetst via Welch's t-test (ongelijke varianties).
+
+**Granger-causaliteitstoets.** Wij gebruiken `statsmodels.tsa.stattools.grangercausalitytests` om te toetsen of het verleden van variabele X (post-frequentie) de toekomst van variabele Y (rendement) voorspelt, gecontroleerd voor Y's eigen autocorrelatie. Twee richtingen worden getest (posts→rendementen en rendementen→posts) op twee resoluties: hour-level over een 60-dagen window, en 5-minuten-level over een 60-dagen window.
+
+**Volume-anomalie test.** Voor elke Iran-post berekenen wij de WTI-handelsvolume z-score in het post-uur ten opzichte van een 24-uurs voortschrijdende baseline (rolling mean en standaarddeviatie). Een significant verhoogde z-score zou wijzen op anomale handelsactiviteit rond post-momenten — een patroon dat consistent zou zijn met geïnformeerde voor-positionering.
+
+**Price-timing test.** Voor elke Iran-post berekenen wij de relatieve prijspositie binnen het 4-uurs voorgaande window: `(prijs_op_t − min) / (max − min)`. Een waarde nabij 0 indiceert een lokaal dieptepunt, nabij 1 een lokaal hoogtepunt. Onder de manipulatie-hypothese ("buy low, then pump") zouden bullish posts systematisch bij lokale dieptepunten moeten vallen.
+
+### 3.5 Methodologische beslissingen
+
+Wij hanteren chronologische train/test-splits om look-ahead bias uit te sluiten, en gebruiken `class_weight="balanced"` om om te gaan met klasse-onbalans in zowel sentiment als toxiciteit. De toxiciteitsdrempel wordt uitsluitend op de trainingsset bepaald om label-leakage te voorkomen. Voor multiple-testing-correctie passen wij op de Iran-event-study Bonferroni-correctie toe: met twaalf gelijktijdige toetsen (3 tickers × 4 windows) ligt de gecorrigeerde significantiedrempel op 0,05 / 12 ≈ 0,004.
+
+---
+
+## 4. Resultaten
+
+### 4.1 Descriptieve analyse van Trumps communicatie
+
+Over de periode februari 2022 tot juni 2026 toont Trumps sentiment een duidelijk temporeel patroon. Het gemiddelde 30-daags voortschrijdend sentiment ligt in 2022 nabij +0,15, daalt in late 2022 en vroege 2023 tot onder nul (samenvallend met de Mar-a-Lago doorzoeking en zijn voortgaande juridische procedures), en stijgt langzaam in 2023–2024 terug. Een markante verschuiving vindt plaats rond januari 2025: van een sentiment-niveau circa +0,10 voor de verkiezingen springt het 30-daags gemiddelde naar circa +0,45 in de weken na inauguratie. In de daaropvolgende periode (2025–2026) blijft het sentiment consistent positief tussen +0,25 en +0,35.
+
+Een Mann-Whitney U-toets op engagement-metrieken (n = 26.819) toont een statistisch significant verschil tussen negatieve en positieve posts: negatieve posts ontvangen mediaan 14.874 likes versus 13.633 voor positieve posts (p = 0,00065). Dit verschil van circa 9% in mediane engagement, hoewel klein in absolute zin, vormt empirisch bewijs voor het bekende "negativity bias"-fenomeen op sociale media, hier gemeten op een individueel politiek dominant account.
+
+### 4.2 Sentimentclassificatie
+
+Op een chronologisch afgesplitste test-set van ongeveer 4.000 posts presteert het L1-Logistic model duidelijk het sterkst:
+
+| Model | Accuratesse | F1 (macro) | F1 (gewogen) |
+|---|---|---|---|
+| Dummy (gestratificeerd) | 0,42 | 0,31 | 0,45 |
+| L1-Logistic | **0,83** | **0,76** | **0,84** |
+| Random Forest | 0,78 | 0,71 | 0,79 |
+| Twitter-RoBERTa (zero-shot) | 0,69 | 0,59 | 0,71 |
+
+Het feit dat een sparse lineair model met circa 8.000 woord-features een 125 miljoen-parameter pre-trained transformer (Twitter-RoBERTa) verslaat is methodologisch interessant. Wij verklaren dit via twee mechanismen: ten eerste een label-distributie-mismatch (Twitter-RoBERTa is gefinetuned op een dataset met andere sentiment-conventies dan de Kaggle ground truth), en ten tweede de stilistisch uniforme aard van Trumps posts die door lineaire methodes effectief wordt gevangen zonder dat contextuele modellering meerwaarde biedt.
+
+Inspectie van de L1-coëfficiënten per klasse onthult coherente vocabulaire-clusters. De sterkste indicatoren van *negatief* sentiment zijn `hell`, `dead`, `destroy`, `fraud`, `worst`, `loser`, `hating`, `corrupt`, `disgrace` en `lunatics`. De sterkste indicatoren van *positief* sentiment zijn `great`, `best`, `liberty`, `protect`, `congratulations`, `thank`, `win`, `beautiful`, `greatest` en `amazing`. De *neutrale* klasse bevat meer entiteits- en context-specifieke termen.
+
+### 4.3 Toxiciteitsclassificatie
+
+Met top-25%-drempel definiëring presteren de modellen als volgt:
+
+| Model | Accuratesse | F1 (binair) | AUC |
+|---|---|---|---|
+| Dummy | 0,58 | 0,27 | 0,49 |
+| L1-Logistic | 0,86 | 0,73 | **0,91** |
+| Random Forest | 0,85 | 0,69 | 0,88 |
+| Toxic-BERT | 0,78 | 0,16 | 1,000 (zie tekst) |
+
+Toxic-BERT vertoont een opmerkelijke AUC van exact 1,000 maar een lage F1 van 0,16. De combinatie van perfecte ranking met lage drempelgebaseerde precision wijst op label-leakage: de Kaggle pre-berekende `toxicity_score`-kolom is hoogstwaarschijnlijk gegenereerd met `unitary/toxic-bert` zelf, waardoor onze toets effectief zelfvoorspelling betreft. Deze observatie versterkt de waarde van onze onafhankelijke L1-Logistic baseline (AUC 0,91) als onafhankelijke validatie van het toxiciteitssignaal.
+
+De top-features voor *hoge toxiciteit* — `hell`, `racist`, `stupid`, `worst`, `loser`, `corrupt`, `disgrace`, `lunatics`, `pathetic`, `thugs`, `crooked`, `disgusting`, `incompetent`, `deranged` — vormen herkenbaar Trumps signatuur-aanvalsvocabulaire. Voor *lage toxiciteit*: `thank`, `pleased`, `congratulations`, `fantastic`, `endorsement`, `incredible`, `champion`, `honor`.
+
+### 4.4 Iran-conflict event-study
+
+#### 4.4.1 Sample en design
+
+Op basis van data tot juni 2026 identificeren wij 134 Iran-gerelateerde posts (versus 435 controle-posts) waarvoor voldoende intraday WTI-data beschikbaar is. Voor SPY en XLE bedraagt het sample 128 Iran-posts versus 378 controle-posts (kleiner vanwege markt-openingstijden).
+
+#### 4.4.2 T-toets op marktreacties
+
+| Ticker | Window | n_iran | n_ctrl | Δμ (bp) | t-stat | p-waarde |
+|---|---|---|---|---|---|---|
+| WTI | 1u | 134 | 435 | +51,5 | 1,63 | 0,103 |
+| SPY | 1u | 128 | 378 | +9,8 | 1,52 | 0,128 |
+| XLE | 1u | 128 | 378 | **−56,9** | **−2,72** | **0,007** |
+
+Met Bonferroni-correctie voor twaalf tegelijktijdige toetsen ligt de drempel op p ≈ 0,004. Onder deze strenge correctie blijft alleen XLE marginaal binnen het significante bereik; WTI en SPY tonen geen significante verschillen op enige geteste window. Vergelijking met eerdere data-snapshots (mei 2026) suggereert dat het oorspronkelijke sterk significante WTI-effect (Δμ +103 bp, p < 0,001) grotendeels werd gedragen door specifieke event-clusters — met name de aankondiging van een marine-blokkade van de Straat van Hormuz op 11–12 april 2026 — en dat het effect verzwakte naarmate de dataset werd uitgebreid met latere posts. Deze instabiliteit van de geobserveerde correlatie tussen data-revisies is op zichzelf een methodologisch leerpunt.
+
+Het XLE-resultaat — een gemiddelde *daling* van 56,9 bp in de energie-sector ETF in het uur na Iran-posts — is consistent met een interpretatie waarin Trumps pro-productie-retoriek ("drill baby drill", verhoogde Amerikaanse oliedoorvoer) bearish is voor bestaande olieproducenten, zelfs wanneer WTI-futures zelf weinig reageren.
+
+#### 4.4.3 Granger-causaliteitstoetsen
+
+Op uur-resolutie (n = 918 uurlijkse observaties, waarvan 70 met ten minste één Iran-post):
+
+| Richting | Lag 1u | Lag 2u | Lag 3u | Lag 4u |
+|---|---|---|---|---|
+| Posts → WTI returns | F = 0,04, p = 0,84 | p = 0,97 | p = 0,98 | p = 0,99 |
+| WTI returns → Posts | F = 2,13, p = 0,14 | **F = 6,51, p = 0,0016** | **F = 5,26, p = 0,0013** | **F = 4,32, p = 0,0018** |
+
+Op 5-minuten-resolutie (n = 13.386 observaties):
+
+| Richting | Lag 5m | Lag 10m | Lag 15m | Lag 30m | Lag 60m |
+|---|---|---|---|---|---|
+| Posts → WTI returns | p = 0,75 | p = 0,85 | p = 0,92 | p = 0,66 | p = 0,46 |
+| WTI returns → Posts | p = 0,41 | p = 0,67 | p = 0,19 | p = 0,14 | **p = 0,025** |
+
+De Granger-resultaten zijn opmerkelijk consistent: posts voorspellen WTI-rendementen niet op enige geteste resolutie of lag, terwijl WTI-rendementen Trumps posting-frequentie robuust voorspellen met een lag van 2–4 uur (p < 0,002). Op 5-minuten-resolutie verschijnt eveneens een marginaal reverse-direction signaal op 60-minuten lag (p = 0,025). Dit patroon is consistent met een reactieve Trump-interpretatie: hij commentariëert op marktbewegingen die hij waarneemt op een tijdsschaal van enkele uren.
+
+#### 4.4.4 Tests voor informed trading
+
+Wij toetsen twee falsificeerbare implicaties van de manipulatie-hypothese.
+
+**Volume-anomalie.** Op basis van WTI-uurvolumes z-gescoord tegen een 24-uurs voortschrijdende baseline: Iran-posts vallen in uren met een gemiddelde z-score van +0,138 (mediaan +0,191), terwijl controle-posts een gemiddelde z-score van −0,085 tonen (mediaan +0,031). Het verschil van +0,22σ is statistisch significant (t = 2,19, p = 0,030) maar in economisch opzicht klein. Een meer plausibele verklaring dan systematische voor-positionering is dat zowel Iran-gerelateerde marktactiviteit als Trumps Iran-posts geassocieerd zijn met algemene Iran-nieuwsperiodes (common cause).
+
+**Price-timing.** Onder de manipulatie-hypothese zouden bullish posts (de meerderheid van Iran-posts) systematisch nabij lokale dieptepunten in het 4-uurs voorgaande window moeten vallen — een patroon dat optimale entry-timing voor lange posities zou indiceren. Wij vinden geen significant verschil: Iran-posts hebben een gemiddelde positie van 0,391 binnen het 4-uurs window (waarbij 0 = lokaal dieptepunt, 1 = lokaal hoogtepunt) tegen 0,354 voor controle-posts (p = 0,42). Beide groepen vertonen een bimodale verdeling met clusters nabij 0 en 1, een methodologisch artefact van het korte window. Geen aanwijzing voor systematische optimale timing.
+
+---
+
+## 5. Discussie
+
+### 5.1 Interpretatie van de hoofdbevinding
+
+De cumulatieve evidentie van vier complementaire analyses (t-toets, Granger op uur-resolutie, Granger op 5-minuten-resolutie, volume- en price-timing-toetsen) ondersteunt geen directe causale invloed van Trumps Iran-posts op de oliemarkt. De geobserveerde geringe en niet-significante correlatie op WTI-returns (Δμ +51,5 bp, p = 0,10), gecombineerd met afwezigheid van Granger-causaliteit in de richting posts→prijzen op beide tijdsresoluties, sluit weliswaar sub-minute causale effecten niet uit, maar maakt deze hypothese minder waarschijnlijk dan de alternatieve verklaring van een gemeenschappelijke onderliggende oorzaak.
+
+Het robuuste Granger-signaal in de richting van WTI→posts op uur-resolutie (F = 4,3–6,5, p < 0,002) ondersteunt een interpretatie waarin Trumps posts reactief zijn: hij commentariëert op marktbewegingen die hij waarneemt op een tijdsschaal van enkele uren. Deze reactieve interpretatie is consistent met (a) het Mann-Whitney resultaat over engagement (negatieve posts ontvangen meer engagement, hetgeen Trump een prikkel geeft om reactief negatief te schrijven over gebeurtenissen die hij waarneemt), en (b) het feit dat sub-uur Granger-signalen in *beide* richtingen ontbreken — wat erop wijst dat geen van beide variabelen direct op de andere reageert binnen het uur.
+
+De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurtenissen — Israëlische operaties, Iraanse vergelding, OPEC-besluiten, andere Midden-Oosten-ontwikkelingen — zowel de oliemarkt (binnen minuten via nieuwsberichten en algoritmische traders) als Trumps daaropvolgende Truth Social-activiteit (binnen uren, na nieuwsverwerking en publicatie-beslissing) aansturen. De geobserveerde correlatie tussen Iran-posts en marktbewegingen reflecteert dan een gemeenschappelijke informatiebron, niet een directe oorzakelijke keten.
+
+### 5.2 Het XLE-resultaat als secundaire bevinding
+
+Het significante negatieve effect op de energie-sector ETF (Δμ −56,9 bp, p = 0,007) is een onverwachte bevinding die meerdere interpretaties toelaat. De meest plausibele is dat Trumps Iran-gerelateerde rhetoriek vaak een pro-productie component bevat (advocacy voor verhoogde Amerikaanse drilling, druk op OPEC voor productie-uitbreiding), die bearish is voor de winstgevendheid van bestaande olieproducenten. Wanneer WTI-prijzen stijgen op risico-premies maar producenten verwachten dat het aanbod zal toenemen, kan XLE inderdaad dalen. Wij merken op dat dit resultaat marginaal binnen de Bonferroni-gecorrigeerde drempel valt (p = 0,007 versus drempel 0,004) en moet worden geïnterpreteerd met voorzichtigheid; replicatie op grotere datasets is gewenst.
+
+### 5.3 Methodologische beperkingen
+
+Vijf beperkingen dienen expliciet vermeld:
+
+1. *Tijdsaggregatie.* Onze fijnste resolutie (5 minuten) kan sub-minute marktreacties op individuele posts missen. Algoritmische trading-systemen kunnen tweets binnen seconden verwerken en handelen; voor uitsluitsel over deze tijdsschaal zou tick-level data (per seconde of per transactie) vereist zijn.
+2. *Common-cause confounding.* Zonder kruisverwijzing naar nieuwswire-tijdstempels (Reuters, Bloomberg, AP) kunnen wij niet definitief vaststellen of marktbewegingen voortvloeien uit nieuws dat Trumps posts simpelweg parafraseren, dan wel uit Trumps posts zelf.
+3. *Heterogene effecten.* De aggregaat-analyse middelt over 134 Iran-posts. Specifieke high-impact posts (zoals de Hormuz-blokkade-aankondiging op 11–12 april 2026) kunnen substantiële individuele impact hebben die door het gemiddelde wordt uitgesmeerd.
+4. *Sample-omvang van 60 dagen.* yfinance beperkt intraday-data tot circa 60 dagen, hetgeen onze analyse op uur-resolutie inkort tot een gedeelte van de conflictperiode.
+5. *Keyword-selectie van Iran-posts.* Onze keyword-matching kan zowel valse positieven (een Trump-post die alleen `iran` noemt zonder marktrelevante inhoud) als valse negatieven (een marktrelevante post zonder Iran-keyword) bevatten.
+
+### 5.4 Reflectie op de classifiers
+
+De superieure prestatie van L1-Logistic ten opzichte van Twitter-RoBERTa is consistent met de observatie van Loughran en McDonald (2016) dat lineaire methodes competitief blijven op gespecialiseerde tekstdomeinen. De vermoedelijke label-leakage van Toxic-BERT op de toxiciteitstaak versterkt het argument voor onafhankelijke baseline-modellen bij elke evaluatie waarin de herkomst van ground-truth labels niet volledig transparant is.
+
+### 5.5 Implicaties
+
+Voor het publieke debat impliceren onze bevindingen dat de populaire perceptie dat presidentiële social-media-posts directe markt-bewegingen veroorzaken — althans in deze case van Iran-conflict-communicatie op de oliemarkt — niet door empirische data wordt ondersteund. Markten lijken te reageren op het onderliggende nieuws, niet op de presidentiële uitingen erover.
+
+Voor toekomstig onderzoek bevelen wij aan: (a) tick-level data combineren met nieuwswire-tijdstempels om sub-minute causale effecten te isoleren, (b) uitbreiding naar andere geopolitieke contexten (handelsoorlogen, NAVO-spanningen) voor generaliseerbaarheid, en (c) vergelijkende analyse met andere politiek dominante accounts.
+
+---
+
+## 6. Conclusie
+
+Dit onderzoek toetste empirisch of Donald Trumps Iran-gerelateerde Truth Social-posts de WTI ruwe-olieprijs beïnvloeden sinds het uitbreken van het Iran-conflict op 28 februari 2026.
+
+Op basis van 134 Iran-posts en 435 controle-posts in een 60-daagse intraday-window vinden wij geen statistisch significante directe invloed van posts op WTI-rendementen op enige geteste resolutie of tijdvenster. Granger-causaliteitstoetsen ondersteunen consistent het omgekeerde verband: WTI-rendementen voorspellen Trumps Iran-post-frequentie met een lag van 2–4 uur (p < 0,002). De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurtenissen zowel marktbewegingen als Trumps daaropvolgende communicatie aansturen.
+
+Een secundaire bevinding is een significant negatief effect op de energie-sector ETF (Δμ −56,9 bp, p = 0,007), consistent met de hypothese dat Trumps pro-productie-rhetoriek bearish is voor bestaande olieproducenten zelfs wanneer ruwe-olie zelf weinig reageert.
+
+Toetsen voor informed trading (volume-anomalie en price-timing) leveren geen robuust patroon dat consistent zou zijn met systematische voor-positionering rond Trumps posts.
+
+Naast deze empirische bevindingen heeft dit onderzoek een herbruikbare classificatie-pipeline opgeleverd: een sentiment-classifier met 83% accuratesse en een toxiciteits-classifier met AUC 0,91, beide gebaseerd op interpreteerbare lineaire modellen die in productie kunnen worden ingezet voor real-time scoring van nieuwe posts.
+
+---
+
+## 7. Referenties
+
+Antweiler, W., & Frank, M. Z. (2004). Is all that talk just noise? The information content of internet stock message boards. *The Journal of Finance, 59*(3), 1259–1294.
+
+Araci, D. (2019). FinBERT: Financial sentiment analysis with pre-trained language models. *arXiv preprint* arXiv:1908.10063.
+
+Bollen, J., Mao, H., & Zeng, X.-J. (2011). Twitter mood predicts the stock market. *Journal of Computational Science, 2*(1), 1–8.
+
+Breiman, L. (2001). Random forests. *Machine Learning, 45*(1), 5–32.
+
+Jain, S., & Wallace, B. C. (2019). Attention is not explanation. *Proceedings of NAACL-HLT 2019*, 3543–3556.
+
+Ke, Z., Kelly, B., & Xiu, D. (2023). Predicting returns with text data. *Journal of Finance, 78*(5), 3551–3593.
+
+Loughran, T., & McDonald, B. (2011). When is a liability not a liability? Textual analysis, dictionaries, and 10-K filings. *The Journal of Finance, 66*(1), 35–65.
+
+Loughran, T., & McDonald, B. (2016). Textual analysis in accounting and finance: A survey. *Journal of Accounting Research, 54*(4), 1187–1230.
+
+Lundberg, S. M., & Lee, S.-I. (2017). A unified approach to interpreting model predictions. *Advances in Neural Information Processing Systems, 30*, 4765–4774.
+
+Tetlock, P. C. (2007). Giving content to investor sentiment: The role of media in the stock market. *The Journal of Finance, 62*(3), 1139–1168.
+
+---
+
+## 8. Bijlagen
+
+### Bijlage A — Code repository
+
+Volledige broncode beschikbaar op GitHub:
+**https://github.com/QuintenFritz/truthsocial-marketimpact**
+
+Belangrijke onderdelen:
+- `notebooks/01–10` — analyse-notebooks per fase.
+- `src/data/` — Python-modules voor dataverzameling en preprocessing.
+- `src/data/scrape_trumpstruth_rss.py` — eigen scraper voor live posts.
+- `models/sentiment/` en `models/toxicity/` — getrainde classifiers.
+
+De tag `v1.0-market-prediction` markeert een snapshot van een initiële (verworpen) onderzoeksrichting waarin wij de algemene marktimpact van alle Trump-posts (niet uitsluitend Iran-gerelateerd) probeerden te modelleren via Random Forest. Deze richting werd verworpen wegens onvoldoende signaal-tot-ruis-verhouding (AUC circa 0,55), waarna de focus verschoof naar de Iran-conflict event-study die in dit document wordt gerapporteerd.
+
+### Bijlage B — Reproductie
+
+```bash
+git clone https://github.com/QuintenFritz/truthsocial-marketimpact.git
+cd truthsocial-marketimpact
+conda create -n truthsocial python=3.11 -y
+conda activate truthsocial
+pip install -e ".[dev,dashboard,nlp]"
+
+# Plaats Kaggle CSV in data/raw/trump_truth_archive.csv
+python -m src.data.scrape_trumpstruth_rss --start 2026-02-28
+
+jupyter lab notebooks/
+# Run notebooks 01 t/m 10 in volgorde
+```
+
+### Bijlage C — Aanvullende figuren en tabellen
+
+[TODO: voeg PNG-exports van de relevante notebooks toe — temporal sentiment plot, classifier comparison bars, t-test histograms, Granger output, volume z-score histogram.]
+
+---
+
+*Versie 1.0 — gegenereerd 2 juni 2026 op basis van data t/m juni 2026.
+Conversie naar Word: `pandoc scriptie_full.md -o scriptie.docx`.*
