@@ -82,6 +82,44 @@ def bootstrap_diff_ci(
     }
 
 
+def bootstrap_ci(
+    x,
+    stat: Callable[[np.ndarray], float] = np.mean,
+    h0: float = 0.0,
+    n_boot: int = 10000,
+    ci: float = 95.0,
+    random_state: int = 42,
+) -> dict:
+    """One-sample bootstrap-CI voor stat(x).
+
+    In-cursus alternatief voor de één-steekproef t-toets (`ttest_1samp`). We
+    resamplen `x` met teruglegging en lezen een percentiel-CI af op de
+    statistiek. `excludes_h0` is True als de nulwaarde `h0` buiten het CI valt
+    (bv. h0=0 voor "CAR verschilt van nul", of h0=1 voor "volume-ratio ≠ 1").
+
+    Returns
+    -------
+    dict: obs, ci_low, ci_high, excludes_h0, n
+    """
+    rng = np.random.default_rng(random_state)
+    a = np.asarray(pd.Series(x).dropna(), dtype=float)
+    if len(a) == 0:
+        raise ValueError("x moet minstens één observatie hebben.")
+    obs = stat(a)
+    boot = np.empty(n_boot)
+    for i in range(n_boot):
+        boot[i] = stat(rng.choice(a, size=len(a), replace=True))
+    alpha = (100.0 - ci) / 2.0
+    lo, hi = np.percentile(boot, [alpha, 100.0 - alpha])
+    return {
+        "obs": float(obs),
+        "ci_low": float(lo),
+        "ci_high": float(hi),
+        "excludes_h0": bool(lo > h0 or hi < h0),
+        "n": int(len(a)),
+    }
+
+
 def bootstrap_diff_bp(treatment, control, **kwargs) -> dict:
     """Zelfde als bootstrap_diff_ci maar verschil-velden in basispunten (×1e4).
 

@@ -265,7 +265,7 @@ Statistisch significant verschil in engagement tussen negative en positive posts
 
 - Mediane likes negative posts: **14.874**
 - Mediane likes positive posts: **13.633**
-- Mann-Whitney U test: p = **0.00065** (significant)
+- Bootstrap-CI op het mediaan-verschil: **95%-CI sluit 0 uit** (negatief > positief)
 
 **Interpretatie**: bevestigt de "negativity bias" hypothese voor één van de meest gevolgde
 politieke accounts ter wereld. Negatieve content krijgt ~9% meer engagement.
