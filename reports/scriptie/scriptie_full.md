@@ -16,7 +16,7 @@
 
 Sinds het uitbreken van het Iran-conflict op 28 februari 2026 heeft Donald Trump intensief over de oorlog gecommuniceerd via zijn platform Truth Social. Dit onderzoek toetst empirisch de hypothese dat zijn berichten doelbewust worden ingezet om de oliemarkt te beïnvloeden. Op basis van 26.819 historische posts (Kaggle-dataset, februari 2022 – april 2026), aangevuld met gescrapte posts via de trumpstruth.org RSS-feed sinds conflictstart, intraday WTI futures data op uur- en 5-minuten-resolutie, en eigenontwikkelde classificatie-modellen voor sentiment en toxiciteit, voeren wij een event-study uit op 134 Iran-gerelateerde posts versus 435 controle-posts.
 
-De resultaten ondersteunen niet de hypothese van directe markt-aansturing. Wij vinden een marginale, niet-significante correlatie tussen Iran-posts en WTI-rendementen op een 1-uurs window (Δμ = +51,5 bp, p = 0,103), maar een statistisch significant negatief effect op de energiesector-ETF XLE (Δμ = −56,9 bp, p = 0,007). Granger-causaliteitstoetsen ondersteunen consequent een reactief patroon: WTI-rendementen voorspellen Trumps Iran-postingactiviteit met lagstructuur 2–4 uur (F = 4,3–6,5, p < 0,002), terwijl het omgekeerde verband op geen enkele resolutie significant is. Twee aanvullende toetsen op manipulatie-hypothesen (volume-anomalie en price-timing) tonen slechts marginaal verhoogd handelsvolume rond Iran-posts (Δμ = +0,22σ, p = 0,030) en geen patroon van optimale prijs-timing.
+De resultaten ondersteunen niet de hypothese van directe markt-aansturing. Op uur-resolutie vinden wij geen significant verschil tussen Iran- en controle-posts: de bootstrap-95%-CI's voor zowel WTI/SPY als de energiesector-ETF XLE omvatten nul. Op minuut-niveau vertoont de brede markt wél een significante negatieve drift na Iran-posts (CAR −33,2 bp na 120 min, CI [−57,7, −8,5]), terwijl het grotere XLE-effect te ruisig is om te bevestigen. Granger-causaliteitstoetsen ondersteunen consequent een reactief patroon: WTI-rendementen voorspellen Trumps Iran-postingactiviteit met lagstructuur 2–4 uur (F = 4,3–6,5, p < 0,002), terwijl het omgekeerde verband op geen enkele resolutie significant is. Van de manipulatie-toetsen is alleen verhoogd energiesector-volume rond Iran-posts robuust (+0,23σ, CI [+0,02, +0,44]); er is geen patroon van optimale prijs-timing. Het geheel wijst op een reactieve rol, met common cause (onderliggend Iran-nieuws) als meest plausibele verklaring.
 
 De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurtenissen zowel marktbewegingen als Trumps communicatie aansturen — een common-cause verklaring. Dit onderzoek levert tevens herbruikbare classifiers (sentiment: 83% accuratesse; toxiciteit: AUC 0,91) en een complete reproduceerbare pipeline op.
 
@@ -171,17 +171,18 @@ De top-features voor *hoge toxiciteit* — `hell`, `racist`, `stupid`, `worst`, 
 
 Op basis van data tot juni 2026 identificeren wij 134 Iran-gerelateerde posts (versus 435 controle-posts) waarvoor voldoende intraday WTI-data beschikbaar is. Voor SPY en XLE bedraagt het sample 128 Iran-posts versus 378 controle-posts (kleiner vanwege markt-openingstijden).
 
-#### 4.4.2 T-toets op marktreacties
+#### 4.4.2 Event-study op marktreacties (bootstrap-CI)
 
-| Ticker | Window | n_iran | n_ctrl | Δμ (bp) | t-stat | p-waarde |
-|---|---|---|---|---|---|---|
-| WTI | 1u | 134 | 435 | +51,5 | 1,63 | 0,103 |
-| SPY | 1u | 128 | 378 | +9,8 | 1,52 | 0,128 |
-| XLE | 1u | 128 | 378 | **−56,9** | **−2,72** | **0,007** |
+Wij vergelijken het verschil in gemiddelde returns tussen Iran- en controle-posts via bootstrap-95%-CI's. Op alle geteste windows (t+1u, t+4u, t+24u) omvat het CI nul — geen aantoonbaar verschil tussen Iran- en controle-posts, noch voor de brede markt (SPY) noch voor de energiesector (XLE, WTI-proxy):
 
-Op basis van de bootstrap-95%-CI's omvatten WTI en SPY op elke geteste window nul (geen aantoonbaar verschil met de controlegroep); alleen XLE ligt marginaal op de grens. Vergelijking met eerdere data-snapshots (mei 2026) suggereert dat het oorspronkelijke sterk significante WTI-effect (Δμ +103 bp, p < 0,001) grotendeels werd gedragen door specifieke event-clusters — met name de aankondiging van een marine-blokkade van de Straat van Hormuz op 11–12 april 2026 — en dat het effect verzwakte naarmate de dataset werd uitgebreid met latere posts. Deze instabiliteit van de geobserveerde correlatie tussen data-revisies is op zichzelf een methodologisch leerpunt.
+| Ticker | Window | Δμ (bp) | 95%-CI (bp) | sluit 0 uit |
+|---|---|---|---|---|
+| SPY | t+24u | +0,5 | [−11,6, +13,2] | nee |
+| XLE (WTI-proxy) | t+24u | −14,0 | [−33,1, +4,4] | nee |
 
-Het XLE-resultaat — een gemiddelde *daling* van 56,9 bp in de energie-sector ETF in het uur na Iran-posts — is consistent met een interpretatie waarin Trumps pro-productie-retoriek ("drill baby drill", verhoogde Amerikaanse oliedoorvoer) bearish is voor bestaande olieproducenten, zelfs wanneer WTI-futures zelf weinig reageren.
+Het eerder gerapporteerde sterk significante XLE-effect (Δμ −56,9 bp, p = 0,007 onder een parametrische t-toets) **repliceert niet** onder bootstrap op de volledige, opnieuw verzamelde dataset: het 24-uurs XLE-verschil blijft directioneel negatief maar het CI omvat nul. Vergelijking met eerdere snapshots laat zien dat het oorspronkelijke WTI-effect (Δμ +103 bp) grotendeels werd gedragen door de Hormuz-cluster (11–12 april 2026); naarmate de dataset groeide en met resampling werd getoetst, verdween de significantie. Deze instabiliteit tussen data-revisies is op zichzelf een methodologisch leerpunt.
+
+Op **minuut-niveau** (one-sample CAR t.o.v. nul, baseline = 30 minuten vóór de post) verschijnt wél een patroon: de brede markt (SPY) vertoont een significante negatieve drift in het venster na Iran-posts, oplopend tot Δ = −33,2 bp na 120 minuten (95%-CI [−57,7, −8,5], n = 56). Voor XLE is de puntschatting groter (−73,9 bp) maar het CI omvat nul ([−205, +24]) — te ruisig om te bevestigen. Het effect zit dus eerder in een brede-markt-drift dan in een energiesector-specifieke return-reactie.
 
 #### 4.4.3 Granger-causaliteitstoetsen
 
@@ -205,7 +206,7 @@ De Granger-resultaten zijn opmerkelijk consistent: posts voorspellen WTI-rendeme
 
 Wij toetsen twee falsificeerbare implicaties van de manipulatie-hypothese.
 
-**Volume-anomalie.** Op basis van WTI-uurvolumes z-gescoord tegen een 24-uurs voortschrijdende baseline: Iran-posts vallen in uren met een gemiddelde z-score van +0,138 (mediaan +0,191), terwijl controle-posts een gemiddelde z-score van −0,085 tonen (mediaan +0,031). Het verschil van +0,22σ is statistisch significant (t = 2,19, p = 0,030) maar in economisch opzicht klein. Een meer plausibele verklaring dan systematische voor-positionering is dat zowel Iran-gerelateerde marktactiviteit als Trumps Iran-posts geassocieerd zijn met algemene Iran-nieuwsperiodes (common cause).
+**Volume-anomalie.** Op basis van XLE-uurvolumes (WTI-proxy) z-gescoord tegen een 24-uurs voortschrijdende baseline vallen Iran-posts in uren met een gemiddelde z-score van +0,29 tegen +0,06 voor controle-posts; het bootstrap-95%-CI op het verschil (+0,23σ) bedraagt [+0,02, +0,44] en **sluit nul uit**. Voor de brede markt (SPY) is het verschil niet significant (+0,13σ, CI [−0,05, +0,32]). Er is dus aantoonbaar verhoogd handelsvolume in de energiesector rond Iran-posts, maar de meest plausibele verklaring blijft common cause (Iran-nieuwsperiodes drijven zowel het volume als Trumps posts), niet systematische voor-positionering.
 
 **Price-timing.** Onder de manipulatie-hypothese zouden bullish posts (de meerderheid van Iran-posts) systematisch nabij lokale dieptepunten in het 4-uurs voorgaande window moeten vallen — een patroon dat optimale entry-timing voor lange posities zou indiceren. Wij vinden geen significant verschil: Iran-posts hebben een gemiddelde positie van 0,391 binnen het 4-uurs window (waarbij 0 = lokaal dieptepunt, 1 = lokaal hoogtepunt) tegen 0,354 voor controle-posts (p = 0,42). Beide groepen vertonen een bimodale verdeling met clusters nabij 0 en 1, een methodologisch artefact van het korte window. Geen aanwijzing voor systematische optimale timing.
 
@@ -229,7 +230,7 @@ Het inhoudelijk relevante punt is echter de effectgrootte, niet de significantie
 
 ### 5.1 Interpretatie van de hoofdbevinding
 
-De cumulatieve evidentie van vier complementaire analyses (t-toets, Granger op uur-resolutie, Granger op 5-minuten-resolutie, volume- en price-timing-toetsen) ondersteunt geen directe causale invloed van Trumps Iran-posts op de oliemarkt. De geobserveerde geringe en niet-significante correlatie op WTI-returns (Δμ +51,5 bp, p = 0,10), gecombineerd met afwezigheid van Granger-causaliteit in de richting posts→prijzen op beide tijdsresoluties, sluit weliswaar sub-minute causale effecten niet uit, maar maakt deze hypothese minder waarschijnlijk dan de alternatieve verklaring van een gemeenschappelijke onderliggende oorzaak.
+De cumulatieve evidentie van complementaire analyses (event-study met bootstrap-CI, Granger op uur- en 5-minuten-resolutie, volume- en price-timing-toetsen) ondersteunt geen directe causale invloed van Trumps Iran-posts op de oliemarkt. Het ontbreken van een significant Iran-vs-controle-verschil op uur-resolutie (alle bootstrap-CI's omvatten nul), gecombineerd met afwezigheid van Granger-causaliteit in de richting posts→prijzen op beide tijdsresoluties, sluit weliswaar sub-minute causale effecten niet uit, maar maakt deze hypothese minder waarschijnlijk dan de alternatieve verklaring van een gemeenschappelijke onderliggende oorzaak. De significante negatieve minuut-CAR op de brede markt (SPY) is daarmee consistent: een korte drift die samenvalt met de nieuwsperiodes waarin Trump post, eerder dan een door de post veroorzaakte beweging.
 
 Het robuuste Granger-signaal in de richting van WTI→posts op uur-resolutie (F = 4,3–6,5, p < 0,002) ondersteunt een interpretatie waarin Trumps posts reactief zijn: hij commentariëert op marktbewegingen die hij waarneemt op een tijdsschaal van enkele uren. Deze reactieve interpretatie is consistent met (a) het engagement-resultaat (negatieve posts ontvangen meer engagement, hetgeen Trump een prikkel geeft om reactief negatief te schrijven over gebeurtenissen die hij waarneemt), en (b) het feit dat sub-uur Granger-signalen in *beide* richtingen ontbreken — wat erop wijst dat geen van beide variabelen direct op de andere reageert binnen het uur.
 
@@ -237,7 +238,7 @@ De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurten
 
 ### 5.2 Het XLE-resultaat als secundaire bevinding
 
-Het significante negatieve effect op de energie-sector ETF (Δμ −56,9 bp, p = 0,007) is een onverwachte bevinding die meerdere interpretaties toelaat. De meest plausibele is dat Trumps Iran-gerelateerde rhetoriek vaak een pro-productie component bevat (advocacy voor verhoogde Amerikaanse drilling, druk op OPEC voor productie-uitbreiding), die bearish is voor de winstgevendheid van bestaande olieproducenten. Wanneer WTI-prijzen stijgen op risico-premies maar producenten verwachten dat het aanbod zal toenemen, kan XLE inderdaad dalen. Wij merken op dat dit resultaat marginaal binnen de Bonferroni-gecorrigeerde drempel valt (p = 0,007 versus drempel 0,004) en moet worden geïnterpreteerd met voorzichtigheid; replicatie op grotere datasets is gewenst.
+In een eerdere data-snapshot leek de energie-sector ETF (XLE) een significant negatief uur-effect te vertonen (Δμ −56,9 bp, p = 0,007 onder een t-toets). Op de volledige, opnieuw verzamelde dataset en met bootstrap-CI's houdt dit echter geen stand: het 24-uurs XLE-verschil blijft directioneel negatief (−14,0 bp) maar het CI omvat nul. Het energiesignaal dat wél robuust is, zit niet in de *returns* maar in het *volume*: rond Iran-posts is het XLE-handelsvolume significant verhoogd (+0,23σ, CI [+0,02, +0,44]). Daarnaast vertoont de brede markt (SPY) op minuut-niveau een significante negatieve drift na Iran-posts (−33,2 bp na 120 min, CI [−57,7, −8,5]). Het beeld is dus eerder een brede-markt-drift met verhoogde energiesector-activiteit dan een energiesector-specifiek koerseffect; gegeven de reactieve Granger-structuur is common cause (onderliggend Iran-nieuws) de meest plausibele verklaring.
 
 ### 5.3 Methodologische beperkingen
 
@@ -269,7 +270,7 @@ Dit onderzoek toetste empirisch of Donald Trumps Iran-gerelateerde Truth Social-
 
 Op basis van 134 Iran-posts en 435 controle-posts in een 60-daagse intraday-window vinden wij geen statistisch significante directe invloed van posts op WTI-rendementen op enige geteste resolutie of tijdvenster. Granger-causaliteitstoetsen ondersteunen consistent het omgekeerde verband: WTI-rendementen voorspellen Trumps Iran-post-frequentie met een lag van 2–4 uur (p < 0,002). De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurtenissen zowel marktbewegingen als Trumps daaropvolgende communicatie aansturen.
 
-Een secundaire bevinding is een significant negatief effect op de energie-sector ETF (Δμ −56,9 bp, p = 0,007), consistent met de hypothese dat Trumps pro-productie-rhetoriek bearish is voor bestaande olieproducenten zelfs wanneer ruwe-olie zelf weinig reageert.
+Secundaire bevindingen, na hertoetsing met bootstrap-CI's op de volledige dataset: er is geen significant Iran-vs-controle-verschil op uur-returns (ook het eerder gerapporteerde XLE-effect van −56,9 bp houdt geen stand); wél een significante negatieve minuut-CAR op de brede markt (−33,2 bp na 120 min) en significant verhoogd energiesector-volume rond Iran-posts (+0,23σ). Beide zijn consistent met een reactieve interpretatie en common cause, niet met directe markt-aansturing.
 
 Toetsen voor informed trading (volume-anomalie en price-timing) leveren geen robuust patroon dat consistent zou zijn met systematische voor-positionering rond Trumps posts.
 

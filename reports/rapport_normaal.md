@@ -80,13 +80,15 @@ Op basis van 298 tariff-gerelateerde posts in het analysevenster 1 feb–1 jul 2
 
 Dit is de methodologisch meest geavanceerde analyse in dit onderzoek, uitgevoerd op 1-minuut SPY en XLE data opgehaald via Twelve Data.
 
-**Tariff posts — SPY:**
-- Kleine positieve CAR over alle windows: μ = +9,9 bp (t+5m), +9,2 bp (t+30m), −4,1 bp (t+120m). Geen van de windows is statistisch significant (one-sample t-toets, H0: CAR=0).
-- **Volume-ratio: 1,50** (p < 0,05 verwacht op basis van distributie). Het handelsvolume is 50% hoger in de 30 minuten ná een tariff-post dan ervoor — het sterkste significante effect in de gehele intraday analyse.
+Alle toetsen hieronder gebruiken bootstrap-95%-CI's (one-sample CAR vs. nul; volume vs. controle) i.p.v. parametrische t-toetsen, op de volledige opnieuw verzamelde dataset.
 
-**Iran posts — XLE:**
-- Duidelijk negatieve en aanhoudende CAR: μ = −7,8 bp (t+5m), −27,8 bp (t+15m), −64,1 bp (t+30m), −122,0 bp (t+60m), −237,6 bp (t+120m). De monotoon dalende trend over alle windows is consistent en het 95% CI wijkt af van nul vanaf t+30m.
-- **Volume-ratio: 0,86** — minder volume dan baseline, consistent met posts buiten drukke markturen.
+**Tariff posts — SPY:**
+- Volume-z-score significant verhoogd rond tariff-posts: +0,30σ vs. controle, 95%-CI [+0,11, +0,49] (sluit nul uit). De markt let dus aantoonbaar op: verhoogde handelsactiviteit in het post-uur, ook al is de gemiddelde koersbeweging klein.
+
+**Iran posts:**
+- **Brede markt (SPY) — significante negatieve minuut-drift:** CAR loopt op tot −33,2 bp na 120 minuten (95%-CI [−57,7, −8,5]); het CI sluit nul uit vanaf t+15m. Dit is het meest robuuste CAR-patroon.
+- **Energiesector (XLE, WTI-proxy):** grotere puntschatting (−73,9 bp na 120 min) maar het 95%-CI [−205, +24] omvat nul — directioneel negatief, maar te ruisig om te bevestigen. (Het eerder gerapporteerde −237,6 bp was een artefact van een kleiner sample; op de volledige data houdt het geen stand.)
+- **XLE-volume:** wél significant verhoogd rond Iran-posts: +0,23σ, 95%-CI [+0,02, +0,44].
 
 **Escalatie vs. de-escalatie (tariff):**
 - Splitsing op basis van keywords (escalatie n=35, de-escalatie n=28): CAR t+30m Δμ niet significant (p = 0,733). De keyword-gebaseerde toon-splitsing is te grof om statistisch onderscheid te maken.
@@ -128,9 +130,9 @@ De data ondersteunen **niet** de hypothese dat Trump's Truth Social posts de oli
 
 2. **Spectaculaire anchor events, geen generaliseerbaar patroon.** De grootste individuele marktbewegingen in het analysevenster zijn direct gelinkt aan specifieke Trump-communicatie: Liberation Day (SPX −10,5%), 90-daagse pauze (SPX +7,4%), conflictstart Iran (WTI +30,5%). Deze events zijn causaal plausibel maar statistisch te geïsoleerd voor generaliserbare uitspraken.
 
-3. **Volume-effect als sterkste bewijs.** Het meest robuuste intraday resultaat is het volume-effect bij tariff-posts (ratio 1,50): professionele marktpartijen verwerken Truth Social-berichten actief, ook wanneer de gemiddelde prijsbeweging klein is. Dit suggereert dat de markt posts als informatieve signalen behandelt, zelfs als het geaggregeerde effect statistisch niet significant is.
+3. **Volume-effect als sterkste bewijs.** Het meest robuuste intraday resultaat is verhoogd handelsvolume rond posts: tariff-posts +0,30σ (95%-CI [+0,11, +0,49]) en Iran-posts +0,23σ in de energiesector (XLE, CI [+0,02, +0,44]) — beide sluiten nul uit. Professionele marktpartijen verwerken Truth Social-berichten dus actief, ook wanneer de gemiddelde prijsbeweging klein is. Dit suggereert dat de markt posts als informatieve signalen behandelt.
 
-4. **Iran-posts en XLE: aanhoudend negatief CAR-patroon.** De monotone daling van XLE-CAR tot −238 bp na 120 minuten, zonder mean reversion, is het meest consistent negatieve patroon in de analyse. De meest plausibele verklaring is dat Trump's Iran-posts in deze periode (feb–jun 2026) overwegend de-escalerende of nucleaire deal-gerelateerde inhoud hebben, die de olie-risicopremie verlaagt.
+4. **Iran-posts: brede-markt-drift, geen energiesector-specifiek koerseffect.** Op minuut-niveau vertoont de brede markt (SPY) een significante negatieve drift na Iran-posts (−33,2 bp na 120 min, 95%-CI [−57,7, −8,5]). De energiesector (XLE) toont een grotere maar te ruisige daling (CI omvat nul). Het eerder gerapporteerde XLE-effect van −238 bp houdt op de volledige data en met bootstrap dus geen stand; het effect zit eerder in een brede-markt-drift die samenvalt met de Iran-nieuwsperiodes.
 
 5. **Meest plausibele verklaring voor bulk-resultaten: common cause — nu empirisch onderbouwd.** De GDELT-analyse toont aan dat Trump in 100% van de gevallen waarbij nieuws werd gevonden (n=90) pas postte *na* het nieuws, met een gemiddelde vertraging van ~3 uur. Posts zonder aantoonbaar voorafgaand nieuwsbericht produceren evenmin grotere marktreacties (p > 0,22). Onderliggende geopolitieke en handelspolitieke gebeurtenissen drijven zowel marktbewegingen als Trump's posts; de correlatie reflecteert een gemeenschappelijke informatiebron.
 

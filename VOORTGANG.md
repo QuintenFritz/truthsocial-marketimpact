@@ -80,6 +80,19 @@ Brede indices (SPY, SPX) middelen individuele effecten weg. Als Trump expliciet 
 
 **Volgende stap (optioneel):** koppel toon/sentiment (nb08) + GDELT news-timing (nb13) per mention-dag → grotere daling bij negatief-getoonde en niet-reactieve posts? Poolt bedrijven op toon → hogere power.
 
+---
+
+## 🔁 Data-herziening juni 2026: scraper + intraday op lokale parquets
+
+- **posts_live opnieuw gescrapet** met kleinere chunks (`--chunk-days 3`): RSS-feed capt op ~100 items/request, dus maand-chunks kapten af. Nu **2.161 posts (28 feb → 12 jun), 271 Iran-matches** (was 100 posts / 2 Iran). Scraper kreeg een `--chunk-days` optie.
+- **Intraday-analyses (nb10/nb11) gevoed uit lokale Twelve Data 1-min parquets** i.p.v. yfinance-uurdata (die maar ~60 dagen terug gaat). XLE = WTI-proxy op intraday (gratis tier, gedocumenteerde beperking).
+- **Herberekende Iran/tariff-bevindingen (bootstrap-CI, volledige data):**
+  - Tariff SPY volume-z: **+0,30σ [+0,11, +0,49]** ✅
+  - Iran XLE volume-z (WTI-proxy): **+0,23σ [+0,02, +0,44]** ✅ | Iran SPY volume-z: +0,13σ [−0,05, +0,32] ❌
+  - Iran minuut-CAR SPY: **−33,2 bp/120m [−57,7, −8,5]** ✅ | XLE: −73,9 bp [−205, +24] ❌ (te ruisig)
+  - Iran uur-event-study (Iran vs controle): geen significant verschil (SPY/XLE CI's omvatten 0)
+- **Kernverhaal bijgesteld (eerlijker):** het oude "XLE −238 bp / −56,9 bp significant" houdt op de volledige data + bootstrap géén stand. Wat robuust is: een **significante negatieve brede-markt-drift (SPY)** na Iran-posts + **verhoogd energiesector-volume**. Reports (scriptie, scriptie_full, rapport_normaal, rapport_eenvoudig) hierop bijgewerkt.
+
 **Wat al klaar is:**
 - `src/features/company_mentions.py`: curated bedrijf→ticker→sector-ETF mapping (24 bedrijven) + word-boundary extractie. Bewust geen kale NER (interpreteerbaar, hoge precisie); spaCy beschikbaar als optionele recall-uitbreiding (`discover_org_candidates`).
 - `notebooks/14_individual_stocks_event_study.ipynb`: volledige event-study per aandeel met **market-model abnormal returns** (regressie op SPY) i.p.v. simpele baseline → isoleert bedrijfsspecifiek effect. Welch t-toets mention- vs controle-dagen + Bonferroni.
