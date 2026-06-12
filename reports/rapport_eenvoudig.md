@@ -116,6 +116,16 @@ Het resultaat is glashelder: van de 128 onderzochte berichten vond ik bij 90 een
 
 ---
 
+### Notebook 14 — Kijken naar losse aandelen in plaats van de hele beurs
+
+Tot nu toe keek ik steeds naar de héle beurs (de S&P 500) of naar de olieprijs. Maar een index is een gemiddelde van honderden bedrijven — als Trump één bedrijf noemt, verdwijnt dat effect in dat gemiddelde. Dus draaide ik de vraag om: wat gebeurt er met het *aandeel van dat ene bedrijf* op de dag dat Trump het noemt?
+
+Ik liet de computer alle 26.819 berichten doorzoeken op bedrijfsnamen (Apple, Tesla, Boeing, enzovoort) en koppelde elke vermelding aan de koers van dat bedrijf. Belangrijk trucje: ik trek eerst de algemene beursbeweging van die dag eraf, zodat ik alleen het *bedrijfseigen* effect overhoud.
+
+Het resultaat is opvallender dan op beursniveau. **Tesla** springt eruit: op dagen dat Trump Tesla of Elon Musk noemt, daalt het aandeel gemiddeld stevig — en dat blijft staan ook als ik de extreemste dag (5 juni 2025, de publieke ruzie tussen Trump en Musk) weglaat. Ook **Trump's eigen mediabedrijf (DJT)** zakt na zo'n bericht. De effecten zijn groot, maar ik heb per bedrijf weinig dagen, dus statistisch blijven ze "net niet hard bewezen". De les is mooi: op individuele aandelen zie je wél een richting waar de brede index niets liet zien.
+
+---
+
 ## Wat ik heb gevonden — het hoofdverhaal
 
 ### Nee, Trump beweegt de olieprijs niet
@@ -133,6 +143,8 @@ Bij de handelstarieven is het effect groter en zichtbaarder. Op Liberation Day d
 **2. Negatieve berichten krijgen meer likes.** Zijn negatieve berichten krijgen mediaan 14.874 likes, zijn positieve maar 13.633 — een statistisch zeker verschil van ongeveer 9%. Dat geeft hem een prikkel om kwaad te schrijven. Een schoolvoorbeeld van de "negativity bias" op sociale media.
 
 **3. Olie-aandelen vallen wel een beetje na Iran-tweets.** Niet de olieprijs zelf, maar de aandelen van olie-bedrijven (XLE) dalen licht en aanhoudend na Iran-berichten. Trump's Iran-berichten gaan vaak over de-escalatie en nucleaire onderhandelingen, wat de olie-risicopremie verlaagt.
+
+**4. Losse aandelen reageren wél, vooral Tesla.** Waar de brede beurs niets liet zien, daalt het Tesla-aandeel duidelijk op dagen dat Trump Tesla of Elon Musk noemt — gemiddeld zo'n 80 à 110 basispunten meer dan op gewone dagen, en dat blijft staan ook zonder de extreme ruzie-dag. Een index verbergt zulke bedrijfseigen effecten; pas als je inzoomt op het losse aandeel worden ze zichtbaar.
 
 ## Wat ik er niet over kan zeggen
 

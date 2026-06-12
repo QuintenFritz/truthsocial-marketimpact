@@ -26,7 +26,7 @@ Drie databronnen werden gecombineerd. Belangrijk vooraf: we hebben Truth Social 
 
 ### 2.2 Methoden
 
-We pasten zes complementaire analyses toe:
+We pasten acht complementaire analyses toe:
 
 1. **Dagelijkse event-study t-toets.** Voor elke Iran- en tariff-gerelateerde post berekenden we de log-return van de relevante tickers in windows van t+1d, t+2d en t+5d na het bericht, en vergeleken met controle-posts in dezelfde periode via een Welch t-toets.
 2. **Granger-causaliteitstoets.** Toegepast op dagelijkse resolutie voor beide thema's, in beide richtingen (posts → markt en markt → posts).
@@ -35,6 +35,7 @@ We pasten zes complementaire analyses toe:
 5. **Intraday CAR-analyse (minuutdata).** Voor elke post berekenden we de Cumulative Abnormal Return (CAR) op t+5m, t+15m, t+30m, t+60m en t+120m, met als baseline het gemiddelde minuut-rendement in de 30 minuten vóór de post (estimation window). Alleen posts tijdens NYSE-markturen (13:00–21:00 UTC) werden meegenomen. One-sample t-toets op H0: CAR = 0.
 6. **Mean reversion analyse.** Voor de top-kwartiel meest impactvolle posts per thema: fijngranulaire CAR berekend op elke 2 minuten tot t+120m, om te testen of initiële prijsbewegingen tijdelijk (noise) of permanent (informatie-verwerking) zijn.
 7. **GDELT news-timing analyse.** Voor elke post bepaalden we het tijdstip van het eerste matching nieuwsbericht (via GDELT) en berekenden we de lag (Trump_post_time − first_news_time). Posts werden gelabeld als *reactief* (lag > 0: Trump postte na het nieuws) of *geen_nieuws* (geen match gevonden). Vervolgens vergeleken we de dagelijkse SPX- en WTI-returns voor beide groepen via een Welch t-toets om te testen of "geen_nieuws" posts — potentieel informatievere posts — grotere marktreacties produceren.
+8. **Event-study per individueel aandeel.** Uit alle 26.819 posts extraheerden we bedrijfsvermeldingen via een curated bedrijf→ticker-mapping. Per genoemd bedrijf berekenden we een *market-model abnormal return* (regressie van het dagrendement op SPY over een estimation window van 120 handelsdagen, met een gap van 11 dagen voor het event), waarmee de algemene marktbeweging wordt afgetrokken en het bedrijfsspecifieke effect overblijft. De AR_1d en CAR_3d op mention-dagen vergeleken we met de controle-dagen van hetzelfde aandeel via een Welch t-toets, aangevuld met outlier-robuuste toetsen (mediaan, getrimde mean, Mann-Whitney).
 
 Daarnaast bouwden we twee tekstuele classifiers — een sentiment-classifier (3-klasse: positief/negatief/neutraal) en een toxiciteits-classifier (binair) — getraind op Kaggle's pre-berekende labels via TF-IDF features en L1-geregulariseerde logistische regressie.
 
@@ -107,6 +108,18 @@ Om het common-cause probleem direct te adresseren, koppelden we elke post aan he
 
 **Interpretatie:** Het GDELT-patroon is de sterkste methodologische bijdrage van dit onderzoek. Het toont aan dat Trump consistent als *reactor* op nieuws fungeert, niet als initiator van informatie. De 38 posts zonder GDELT-match produceren geen significant hogere marktreacties, wat de informatieve waarde van Trump's posts verder ondermijnt.
 
+### 3.7 Event-study per individueel aandeel
+
+Alle voorgaande markttoetsen draaien op brede indices (SPX, WTI, XLE). Een index middelt bedrijfsspecifieke bewegingen echter weg: als Trump expliciet één bedrijf noemt, verwacht je een effect op dát aandeel dat op indexniveau onzichtbaar wordt. We toetsten daarom een specifiekere hypothese op de volledige history (feb 2022 – apr 2026).
+
+**Vermeldingen:** Van de 26.819 posts noemen er 1.273 minstens één van de 24 bedrijven in onze mapping. Met voldoende verhandelbare mention-dagen voor toetsing: DJT (Trump Media, vanaf de beursgang in maart 2024), Google, Twitter (tot de overname in okt 2022), Meta, Tesla, Amazon en Apple.
+
+**Aggregaat-effect:** Twee bedrijven leveren een ruw-significant verschil tussen mention- en controle-dagen op, beide negatief: DJT (CAR_3d −158 bp, p = 0,037, n = 217) en Tesla (AR_1d −115 bp, p = 0,047, n = 52). Amazon is het enige positieve effect (CAR_3d +51 bp), maar niet significant (p = 0,13); Google, Meta en Apple vertonen geen significant effect. Geen enkel resultaat overleeft de Bonferroni-correctie (12 toetsen, drempel ≈ 0,004) — met dat aantal toetsen verwacht je ~0,6 vals-positieven bij toeval, en we vinden er twee. De bevindingen zijn dus suggestief, niet bewijzend.
+
+**Magnitude is de kern:** het belangrijkste punt is niet de significantie maar de effectgrootte. De individuele effecten (−115 tot −176 bp) zijn een ordegrootte groter dan alles wat op SPX-niveau zichtbaar was (≈ nul). De hypothese dat indices individuele effecten wegmiddelen, wordt op dit punt ondersteund.
+
+**Robuustheid Tesla:** het Tesla-effect verdient nuance. De gemiddelde-gebaseerde toets is fragiel — hij hangt grotendeels aan één dag (5 juni 2025, de publieke Trump–Musk-breuk, AR −14,3%); zonder die dag zakt het effect naar −84 bp (p = 0,088). De outlier-robuuste toetsen tonen echter een breder gedragen patroon: mediaan −83 bp vs. −4 bp, 10%-getrimde mean −86 bp vs. +2 bp, Mann-Whitney p = 0,057, en 62% van de mention-dagen is negatief. Het negatieve effect zit dus in de hele verdeling, niet in één uitschieter. Gezien de zware staarten rapporteren we voor Tesla bij voorkeur de mediaan/Mann-Whitney in plaats van de mean.
+
 ## 4. Wat dit betekent
 
 De data ondersteunen **niet** de hypothese dat Trump's Truth Social posts de olie- of aandelenmarkt direct en causaal beïnvloeden. Vier bevindingen wijzen samen op een genuanceerder beeld:
@@ -132,6 +145,7 @@ Vijf beperkingen die we open en eerlijk vermelden:
 - **Sample-omvang Iran-analyse.** 37 Iran-posts (live scraper) is beperkt voor robuuste causale uitspraken; de intraday CAR-analyse had slechts een handvol observaties tijdens markturen beschikbaar.
 - **Toon-classificatie te grof.** De keyword-gebaseerde splitsing in escalatie/de-escalatie posts (p = 0,733) maakt onvoldoende onderscheid. Een verfijnde aanpak met een getrainde toon-classifier op tariff-specifieke inhoud zou dit kunnen verbeteren.
 - **XLE als WTI-proxy.** Door beperkingen van de gratis Twelve Data tier gebruikten we XLE (Energy Sector ETF) als proxy voor WTI-futures op intraday niveau. XLE correleert sterk met WTI maar bevat ook bedrijfsspecifieke ruis.
+- **Kleine samples per aandeel.** De per-aandeel event-study heeft beperkte power (Tesla n = 52, Apple n = 35) en geen enkel effect overleeft de Bonferroni-correctie. "Mention" is bovendien geen causaliteit: ook hier blijft de common-cause-verklaring mogelijk (Trump reageert op bedrijfsnieuws dat de koers sowieso al beweegt), en sommige vermeldingen zijn niet markt-relevant (DJT is geconfoundeerd doordat Trump zijn eigen platform promoot).
 
 ## 6. Wat we hebben opgeleverd
 
@@ -141,10 +155,11 @@ Naast de empirische bevindingen levert dit onderzoek een complete, reproduceerba
 - Twee getrainde classifiers (sentiment en toxiciteit) met joblib-export voor real-time scoring.
 - Een intraday data-pipeline via Twelve Data API met automatisch samenvoegen van event-windows (scripts/fetch_intraday_twelvedata.py).
 - Een GDELT news-timing pipeline (scripts/fetch_gdelt_news_timing.py) die voor elke post het eerste matching nieuwsbericht ophaalt en de lag berekent.
-- 13 Jupyter notebooks die de volledige analyse-keten documenteren, van data-verzameling tot GDELT news-timing analyse.
+- Een bedrijfsvermeldings-module (src/features/company_mentions.py) met curated bedrijf→ticker→sector-ETF mapping voor de per-aandeel event-study.
+- 14 Jupyter notebooks die de volledige analyse-keten documenteren, van data-verzameling tot de event-study per individueel aandeel.
 - GitHub repository met CI/CD-pipeline en tests.
 
-Voor toekomstig onderzoek raden we vier uitbreidingen aan: (1) tick-level marktdata combineren met news-wire tijdstempels om sub-minuut causale effecten te isoleren, (2) een getrainde toon-classifier specifiek voor handelspolitieke posts om de escalatie/de-escalatie splitsing te verfijnen, (3) uitbreiding van de intraday analyse naar WTI-futures (vereist betaalde Twelve Data tier), en (4) vergelijkende analyse van Liberation Day-type events met andere presidentiële communicatiekanalen.
+Voor toekomstig onderzoek raden we vijf uitbreidingen aan: (1) tick-level marktdata combineren met news-wire tijdstempels om sub-minuut causale effecten te isoleren, (2) een getrainde toon-classifier specifiek voor handelspolitieke posts om de escalatie/de-escalatie splitsing te verfijnen, (3) uitbreiding van de intraday analyse naar WTI-futures (vereist betaalde Twelve Data tier), (4) vergelijkende analyse van Liberation Day-type events met andere presidentiële communicatiekanalen, en (5) het bedrijfsspecifieke effect aanscherpen door per mention-dag de toon (notebook 08) en de GDELT news-timing (notebook 13) te koppelen — is de daling groter bij negatief-getoonde en niet-reactieve posts? — wat tegelijk de power verhoogt door bedrijven op toon te poolen.
 
 ---
 

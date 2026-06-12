@@ -376,6 +376,31 @@ Voorbeeld:]
 
 ---
 
+### 4.6 Event-study per individueel aandeel (notebook 14)
+
+Alle voorgaande markttoetsen draaien op brede indices (SPX, WTI, XLE), die per definitie aggregeren over vele ondernemingen. Een effect dat specifiek is voor één door Trump genoemd bedrijf, wordt op indexniveau uitgemiddeld. Notebook 14 toetst daarom een nauwkeuriger geformuleerde hypothese op de volledige history (feb 2022 – apr 2026): reageert een individueel aandeel sterker op een expliciete Trump-vermelding dan de brede markt?
+
+**Design.** Uit alle 26.819 posts extraheren we bedrijfsvermeldingen via een curated bedrijf→ticker-mapping (`src/features/company_mentions.py`, 24 ondernemingen) met word-boundary regex. Per genoemd bedrijf berekenen we een *market-model abnormal return*: het verwachte rendement komt uit een OLS-regressie van het dagrendement op SPY over 120 handelsdagen (estimation window), met een gap van 11 dagen vóór de eventdag. De resulterende AR is markt-gecorrigeerd en dus bedrijfsspecifiek. AR_1d en CAR_3d op mention-dagen worden via een Welch t-toets vergeleken met de controle-dagen van hetzelfde aandeel; verhandelbaarheidsvensters worden gerespecteerd (DJT vanaf 26 maart 2024, TWTR tot 27 oktober 2022).
+
+**Vermeldingen.** 1.273 van de 26.819 posts noemen minstens één onderneming. Met n ≥ 30 verhandelbare mention-dagen: DJT (n=217), Google (n=127), Meta (n=79), Tesla (n=52), Amazon (n=50), Apple (n=35).
+
+**Aggregaat-resultaten.**
+
+| Bedrijf | Metriek | n | Δμ mention − controle | t | p |
+|---|---|---|---|---|---|
+| DJT (Trump Media) | CAR_3d | 217 | −158 bp | −2,09 | 0,037 |
+| Tesla | AR_1d | 52 | −115 bp | −2,03 | 0,047 |
+| Tesla | CAR_3d | 52 | −176 bp | −1,81 | 0,075 |
+| Amazon | CAR_3d | 50 | +51 bp | +1,55 | 0,128 |
+| Google | CAR_3d | 127 | −39 bp | −1,36 | 0,177 |
+| Apple | AR_1d | 35 | −4 bp | −0,12 | 0,906 |
+
+Twee effecten zijn ruw-significant (DJT, Tesla), beide negatief. Geen enkel resultaat overleeft de Bonferroni-correctie (12 toetsen, drempel ≈ 0,0042). Met dat aantal toetsen verwacht je ~0,6 vals-positieven; we vinden er twee — suggestief, niet bewijzend. Het inhoudelijk centrale punt is de effectgrootte: de individuele effecten (−115 tot −176 bp) zijn een ordegrootte groter dan op SPX-niveau (≈ nul), wat de hypothese ondersteunt dat indices bedrijfsspecifieke effecten wegmiddelen.
+
+**Robuustheid (Tesla).** De AR-verdeling heeft zware staarten, dus de mean-toets is gevoelig voor uitschieters. Het Tesla-effect hangt grotendeels aan 5 juni 2025 (de publieke Trump–Musk-breuk, AR −14,3%); na verwijdering van enkel die dag zakt het naar −84 bp (p = 0,088). Outlier-robuuste toetsen tonen echter een breed gedragen patroon dat níet door die ene dag wordt verklaard: mediaan −83 bp vs. −4 bp, 10%-getrimde mean −86 bp vs. +2 bp, Mann-Whitney p = 0,057, en 62% van de mention-dagen negatief. We rapporteren voor Tesla daarom bij voorkeur de mediaan/Mann-Whitney. Figuren: `reports/figures/nb14_ar_per_company.png` en `nb14_tsla_robustness.png`.
+
+---
+
 ## 5. Discussie
 
 [TODO: 3-5 pagina's. Hier laat je zien dat je *nadenkt* over wat de resultaten betekenen.]
@@ -454,9 +479,16 @@ concluderen, wat we **niet** kunnen concluderen, en waarom.
    - Correlationeel: +103.6 bp WTI Δμ tussen Iran- en controle-posts.
    - Causaliteit: data ondersteunt geen directe causale invloed; common-cause
      interpretatie meest waarschijnlijk.
-4. **Wat we hebben opgeleverd**: een herbruikbare classification + analyse-pipeline.
+   - Per aandeel (nb14): waar de index niets toont, vertonen losse genoemde bedrijven
+     wél een (overwegend negatieve) reactie — Tesla mediaan −83 bp (Mann-Whitney
+     p=0,057), DJT CAR_3d −158 bp (p=0,037); geen overleeft Bonferroni, maar de
+     magnitude ligt een ordegrootte boven het indexniveau.
+4. **Wat we hebben opgeleverd**: een herbruikbare classification + analyse-pipeline,
+   inclusief een bedrijf→ticker-extractiemodule en per-aandeel event-study.
 5. **Toekomstig werk**: tick-level data, news-wire cross-validatie, multi-account
-   uitbreiding, real-time dashboard productie.
+   uitbreiding, real-time dashboard productie, en koppeling van het per-aandeel-effect
+   aan toon (nb08) en news-timing (nb13) om causaliteit aan te scherpen en power te
+   verhogen.
 
 ---
 
@@ -514,8 +546,9 @@ De volledige code voor dit onderzoek is beschikbaar op GitHub:
 **https://github.com/QuintenFritz/truthsocial-marketimpact**
 
 Belangrijkste mappen:
-- `notebooks/` — 11 Jupyter notebooks, één per analyse-fase (01 t/m 10).
+- `notebooks/` — 14 Jupyter notebooks, één per analyse-fase (01 t/m 14).
 - `src/data/` — Python modules voor data-acquisitie en preprocessing.
+- `src/features/company_mentions.py` — bedrijf→ticker-mapping voor de per-aandeel event-study (§4.6).
 - `models/sentiment/` en `models/toxicity/` — getrainde modellen (joblib).
 - `data/raw/` — ruwe data sources (niet gecommit; download instructions in README).
 
@@ -537,7 +570,7 @@ pip install -e ".[dev,dashboard,nlp]"
 # Run live scraper voor recente posts:
 python -m src.data.scrape_trumpstruth_rss --start 2026-02-28
 
-# Run notebooks 01 t/m 10 in volgorde
+# Run notebooks 01 t/m 14 in volgorde
 jupyter lab notebooks/
 ```
 

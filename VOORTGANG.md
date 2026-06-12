@@ -1,0 +1,172 @@
+# Voortgang & Pistes — Trump's Truth Social & Financiële Markten
+
+**Laatste update:** 11 juni 2026  
+**Status:** Kernanalyse afgerond, Prioriteit-1 vervolgpiste (individuele aandelen) in uitvoering
+
+---
+
+## ✅ Wat is afgerond
+
+### Data & infrastructuur
+- [x] Kaggle-archief geladen en verwerkt (26.819 posts, feb 2022 – apr 2026)
+- [x] Live RSS-scraper gebouwd voor posts vanaf feb 2026 (Iran-periode)
+- [x] Dagelijkse marktdata via yfinance (SPX, WTI, DXY, VIX)
+- [x] Intraday 1-minuutdata via Twelve Data API (SPY + XLE, 534 API-calls)
+- [x] GDELT news-timing pipeline (128 posts, 14 nieuwsbronnen)
+
+### Modellering & analyse
+- [x] **nb01** Data collection & kwaliteitschecks
+- [x] **nb02** EDA — marktdata en posts (met event-markeringen op alle tijdlijn-grafieken)
+- [x] **nb03** Alignment & abnormal returns berekenen
+- [x] **nb04** Feature engineering (TF-IDF)
+- [x] **nb05** Random Forest modeling
+- [x] **nb06** Interpretability (SHAP + permutation importance)
+- [x] **nb07** Sentiment exploratie over tijd
+- [x] **nb08** Sentiment-classifier (L1-Logistic: 83% acc, F1 0.76)
+- [x] **nb09** Toxicity-classifier (86% acc, AUC 0.91)
+- [x] **nb10** Iran event study dagelijks
+- [x] **nb11** Liberation Day tariff event study dagelijks
+- [x] **nb12** Intraday CAR-analyse (minuutdata)
+- [x] **nb13** GDELT news-timing analyse
+
+### Rapporten & documentatie
+- [x] `reports/rapport_normaal.md` — volledig onderzoeksverslag
+- [x] `reports/rapport_eenvoudig.md` — toegankelijke samenvatting
+- [x] `reports/notebook_gids.docx` — per-notebook uitleg met grafieken en resultaten
+- [x] `README.md` — projectdocumentatie voor GitHub
+- [x] `.gitignore` bijgewerkt (figures + kleine databestanden worden gecommit)
+
+---
+
+## 📊 Kernresultaten
+
+| Analyse | Resultaat |
+|---|---|
+| ML-model marktrichting voorspellen | ❌ Niet beter dan baseline |
+| Bulk event-study Iran (dagelijks) | ❌ Geen significant effect (p > 0.05) |
+| Bulk event-study tariffs (dagelijks) | ❌ Geen significant effect (p > 0.05) |
+| Granger-causaliteit | ❌ Geen causaliteit in beide richtingen |
+| Volume-effect tariff-posts | ✅ **Ratio = 1.50** (sterkste significante bevinding) |
+| Intraday CAR Iran/XLE | ⚠️ -238 bp na 120 min, geen mean reversion (kleine n) |
+| GDELT news-timing | ✅ **100% reactief**, mediaan lag ~3 uur |
+| Marktmanipulatie-hypothese | ❌ Geen bewijs |
+
+**Hoofdconclusie:** Trump is een nieuwsreageerder, niet een marktbeweger. De correlaties reflecteren een gemeenschappelijke oorzaak (onderliggend nieuws), geen directe causaliteit.
+
+---
+
+## 🔭 Mogelijke vervolgpistes
+
+### 🥇 Prioriteit 1 — Individuele aandelen die Trump noemt
+**Kans op significant resultaat: hoog**
+
+Brede indices (SPY, SPX) middelen individuele effecten weg. Als Trump expliciet "Boeing", "Apple" of "ExxonMobil" noemt, verwacht je een groter effect op die individuele aandelen dan op de brede markt. Dit is een specifiekere hypothese en methodologisch sterker.
+
+**Aanpak:**
+1. spaCy NER op posts → extraheer bedrijfsnamen (PRODUCT, ORG entities)
+2. Match bedrijfsnamen aan ticker-symbolen (handmatige mapping of lookup API)
+3. Download koersen per bedrijf via yfinance
+4. Zelfde event-study methodiek als nb10/nb11 maar per bedrijf
+5. Vergelijk: individuele stock return vs. sector-ETF return (isoleer bedrijfsspecifiek effect)
+
+**Wat nodig is:** ~1-2 dagen werk, geen nieuwe API-kosten  
+**Status:** ✅ Afgerond — notebook 14 gedraaid, bevindingen geschreven
+
+**Resultaat:** anders dan op index-niveau (nb10/nb11) is er op bedrijfsniveau wél een richting zichtbaar. Twee ruw-significante effecten, beide negatief, géén overleeft Bonferroni (12 toetsen, drempel 0,0042): **DJT CAR_3d −158 bp (p=0,037, n=217)** en **TSLA AR_1d −115 bp (p=0,047, n=52)**. AMZN is het enige (niet-significante) positieve effect (+51 bp). De effectgroottes (−115 tot −176 bp) zijn een ordegrootte groter dan op SPX — de hypothese dat indices individuele effecten wegmiddelen wordt ondersteund.
+
+**TSLA outlier-check (sectie 8b/8c):** de mean is fragiel (hangt aan 5 juni 2025, Trump-Musk-breuk, AR −14,3% → zonder die dag p=0,088), maar outlier-robuuste toetsen houden stand: mediaan −83 bp vs −4 bp, 10%-getrimde mean −86 bp vs +2 bp, Mann-Whitney **p=0,057**, 62% van mention-dagen negatief. Het negatieve effect is dus distributie-breed, niet één dag → rapporteer mediaan/Mann-Whitney i.p.v. mean.
+
+**Volgende stap (optioneel):** koppel toon/sentiment (nb08) + GDELT news-timing (nb13) per mention-dag → grotere daling bij negatief-getoonde en niet-reactieve posts? Poolt bedrijven op toon → hogere power.
+
+**Wat al klaar is:**
+- `src/features/company_mentions.py`: curated bedrijf→ticker→sector-ETF mapping (24 bedrijven) + word-boundary extractie. Bewust geen kale NER (interpreteerbaar, hoge precisie); spaCy beschikbaar als optionele recall-uitbreiding (`discover_org_candidates`).
+- `notebooks/14_individual_stocks_event_study.ipynb`: volledige event-study per aandeel met **market-model abnormal returns** (regressie op SPY) i.p.v. simpele baseline → isoleert bedrijfsspecifiek effect. Welch t-toets mention- vs controle-dagen + Bonferroni.
+- Extractie al gedraaid op alle 26.819 posts: **1.273 posts** noemen ≥1 bedrijf. Bruikbare kandidaten met genoeg volume: Google (173), Meta (106), Tesla (94), Amazon (66), Apple (49). DJT (573) alleen vanaf 2024-03-26, TWTR (206) alleen tot 2022-10-27 (verhandelbaarheids-filter zit in de notebook).
+- Kernlogica offline gevalideerd op synthetische data (effect-recovery + weekend→handelsdag-alignment OK).
+
+**Nog te doen (lokaal, yfinance vereist internettoegang):** notebook draaien → koersen downloaden, resultaten + plot genereren, sectie 9 invullen met echte bevindingen.
+
+---
+
+### 🥈 Prioriteit 2 — VIX als doelvariabele (onzekerheidseffect)
+**Kans op significant resultaat: gemiddeld-hoog**
+
+Hypothese wijzigen: niet "posts voorspellen returns" maar "posts verhogen marktangst (VIX)". Dit is een andere en misschien verdedigbaardere claim — Trump's communicatie creëert onzekerheid, ook als de gemiddelde koersbeweging nul is.
+
+**Aanpak:**
+1. VIX data is al beschikbaar in market.parquet
+2. Bereken VIX-change t+1d en t+5d na posts (net als huidige AR-berekening)
+3. Test: zijn VIX-stijgingen significant groter na escalatie-posts vs. controle?
+4. Split op escalatie vs. de-escalatie (hogere kans op significant resultaat dan bij returns)
+
+**Wat nodig is:** ~halve dag, alle data al beschikbaar  
+**Status:** ⬜ Niet gestart
+
+---
+
+### 🥉 Prioriteit 3 — Crypto (Bitcoin/Ethereum)
+**Kans op significant resultaat: gemiddeld**
+
+Crypto handelt 24/7 — het "posts buiten beurstijden" probleem verdwijnt. Bitcoin is gevoelig voor retail sentiment en Trumps achterban is oververtegenwoordigd in crypto. Trump heeft zelf ook uitspraken gedaan over Bitcoin en crypto-wetgeving.
+
+**Aanpak:**
+1. Download BTC/ETH minuutdata via CoinGecko of Binance API (gratis)
+2. Zelfde intraday CAR-methodiek als nb12
+3. Filter op posts die crypto/bitcoin expliciet noemen + algemene tariff/Iran posts
+4. Vergelijk crypto-reactie vs. aandelenmarkt-reactie
+
+**Wat nodig is:** ~1 dag, gratis API  
+**Status:** ⬜ Niet gestart
+
+---
+
+### Prioriteit 4 — Lagsnelheid als moderator (binnen GDELT)
+**Kans op significant resultaat: onzeker**
+
+Binnen de reactieve posts (n=90): posts waarbij Trump snel reageerde (< 60 min na nieuws) zijn mogelijk meer originele informatie of signaleren dat hij goed geïnformeerd is. Test of deze subgroep een grotere marktimpact heeft dan trage-reactie posts.
+
+**Aanpak:**
+1. Data al beschikbaar in gdelt_news_timing.parquet
+2. Split: lag < 60 min (n=?) vs. lag > 180 min (n=?)
+3. Vergelijk SPX/WTI return t+1d tussen de twee groepen
+4. Interpretatie: versterkt of weerlegt de common-cause verklaring
+
+**Wat nodig is:** ~2 uur, alle data al beschikbaar  
+**Status:** ⬜ Niet gestart
+
+---
+
+### Prioriteit 5 — Na-sluitingsuren posts → opening gap
+**Kans op significant resultaat: gemiddeld**
+
+Posts na 21:00 UTC (na beurssluiting) kunnen niet direct verwerkt worden. De markt kan pas reageren bij opening de volgende dag. Test of er een opening gap ontstaat in de verwachte richting, en of deze gap groter is dan op dagen zonder post.
+
+**Aanpak:**
+1. Filter posts op tijdstip: 21:00 UTC - 13:30 UTC (buiten markturen)
+2. Bereken opening gap = open(t+1d) / close(t) - 1
+3. Vergelijk gap-grootte en -richting voor post-days vs. no-post-days
+4. Combineer met sentiment-score voor richting
+
+**Wat nodig is:** ~halve dag, yfinance open/close data al beschikbaar  
+**Status:** ⬜ Niet gestart
+
+---
+
+## 📝 Open methodologische vragen
+
+- [ ] **Twee databronnen**: Kaggle (40 kolommen, tot apr 2026) en RSS (8 kolommen, feb 2026+) hebben overlappende periode (feb–apr 2026). Dubbelchecken dat Iran-posts niet dubbel geteld worden.
+- [ ] **Toon-classifier**: keyword-gebaseerde escalatie/de-escalatie split werkt niet (p=0.733). Een getrainde toon-classifier op tariff-specifieke inhoud zou de intraday split kunnen verbeteren.
+- [ ] **XLE als WTI-proxy**: bij betaalde Twelve Data tier direct WTI-futures (CL=F) gebruiken.
+- [ ] **Kleine steekproef Iran**: 37 posts, waarvan slechts ~15 tijdens markturen. Meer posts scrapen (of wachten tot conflict verder evolueert) voor robuustere intraday resultaten.
+
+---
+
+## 🔧 Technische TODO's
+
+- [ ] Alle notebooks draaien met outputs en committen naar GitHub
+- [ ] Kaggle dataset-link toevoegen in README.md (regel 48: `[DATASET-LINK-HIER]`)
+- [ ] requirements.txt aanmaken in de root van de repo
+
+---
+
+*Dit bestand bijhouden naarmate het onderzoek vordert.*

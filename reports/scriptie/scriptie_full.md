@@ -209,6 +209,20 @@ Wij toetsen twee falsificeerbare implicaties van de manipulatie-hypothese.
 
 **Price-timing.** Onder de manipulatie-hypothese zouden bullish posts (de meerderheid van Iran-posts) systematisch nabij lokale dieptepunten in het 4-uurs voorgaande window moeten vallen — een patroon dat optimale entry-timing voor lange posities zou indiceren. Wij vinden geen significant verschil: Iran-posts hebben een gemiddelde positie van 0,391 binnen het 4-uurs window (waarbij 0 = lokaal dieptepunt, 1 = lokaal hoogtepunt) tegen 0,354 voor controle-posts (p = 0,42). Beide groepen vertonen een bimodale verdeling met clusters nabij 0 en 1, een methodologisch artefact van het korte window. Geen aanwijzing voor systematische optimale timing.
 
+### 4.5 Event-study per individueel aandeel
+
+De voorgaande analyses opereren op brede marktindices (SPX, WTI, XLE). Een index aggregeert echter over honderden ondernemingen, waardoor een effect dat specifiek is voor één genoemd bedrijf systematisch wordt uitgemiddeld. Wij toetsen daarom een nauwkeuriger geformuleerde hypothese op de volledige history (februari 2022 – april 2026): vertoont een individueel aandeel een grotere abnormale reactie wanneer Trump het bedrijf expliciet noemt dan de brede markt?
+
+**Design.** Uit alle 26.819 posts extraheren wij bedrijfsvermeldingen via een curated bedrijf→ticker-mapping (`src/features/company_mentions.py`, 24 ondernemingen), met word-boundary regex om valse positieven te beperken. Voor elk genoemd bedrijf berekenen wij een *market-model abnormal return*: het verwachte rendement volgt uit een OLS-regressie van het dagrendement op SPY over een estimation window van 120 handelsdagen, met een gap van 11 dagen vóór de eventdag om contaminatie te vermijden ($r_{i,t} = \alpha_i + \beta_i r_{SPY,t} + \varepsilon_{i,t}$; $AR_{i,t} = r_{i,t} - (\hat\alpha_i + \hat\beta_i r_{SPY,t})$). De AR is hierdoor per constructie markt-gecorrigeerd, dus bedrijfsspecifiek. AR_1d en CAR_3d op mention-dagen vergelijken wij met de controle-dagen van hetzelfde aandeel via een Welch t-toets. Verhandelbaarheidsvensters worden gerespecteerd (DJT vanaf de beursgang 26 maart 2024; TWTR tot de delisting op 27 oktober 2022).
+
+**Vermeldingen.** Van de 26.819 posts noemen er 1.273 minstens één onderneming. Met voldoende verhandelbare mention-dagen voor toetsing (n ≥ 30): DJT (n=217), Google (n=127), Meta (n=79), Tesla (n=52), Amazon (n=50) en Apple (n=35).
+
+**Aggregaat-resultaten.** Twee aandelen vertonen een ruw-significant verschil tussen mention- en controle-dagen, beide negatief: DJT op CAR_3d (Δμ = −158 bp, p = 0,037) en Tesla op AR_1d (Δμ = −115 bp, p = 0,047). Amazon is het enige positieve effect (CAR_3d Δμ = +51 bp) maar niet significant (p = 0,13); Google, Meta en Apple vertonen geen significant effect. Na Bonferroni-correctie voor twaalf gelijktijdige toetsen (drempel 0,0042) overleeft geen enkel resultaat. Met dat aantal toetsen bedraagt het verwachte aantal vals-positieven bij toeval circa 0,6; wij observeren er twee. De resultaten zijn derhalve suggestief, niet bewijzend.
+
+Het inhoudelijk relevante punt is echter de effectgrootte, niet de significantie: de individuele effecten (−115 tot −176 bp) overtreffen met een ordegrootte alles wat op SPX-niveau zichtbaar was (≈ nul). Dit ondersteunt de hypothese dat indices bedrijfsspecifieke effecten wegmiddelen.
+
+**Robuustheid (Tesla).** Het Tesla-effect verdient nadere toetsing omdat de AR-verdeling zware staarten heeft. De parametrische mean-toets blijkt fragiel: hij wordt grotendeels gedragen door één observatie (5 juni 2025, de publieke breuk tussen Trump en Musk, AR = −14,3%). Verwijdering van uitsluitend die dag reduceert het effect tot −84 bp (p = 0,088), buiten de conventionele significantiedrempel. Outlier-robuuste toetsen wijzen echter op een breed gedragen verschuiving die níet door deze ene dag wordt verklaard: de mediane mention-dag-AR bedraagt −83 bp tegen −4 bp voor controle-dagen, de 10%-getrimde mean −86 bp tegen +2 bp, en de Mann-Whitney U-toets levert p = 0,057. Bovendien is 62% van de mention-dagen negatief. Aangezien de getrimde en mediaan-schattingen de extremen juist uitsluiten en het negatieve verschil van circa −85 bp blijft bestaan, concluderen wij dat de verschuiving distributie-breed is. Voor Tesla verdient de mediaan- of rangtoets de voorkeur boven de mean.
+
 ---
 
 ## 5. Discussie
@@ -243,7 +257,9 @@ De superieure prestatie van L1-Logistic ten opzichte van Twitter-RoBERTa is cons
 
 Voor het publieke debat impliceren onze bevindingen dat de populaire perceptie dat presidentiële social-media-posts directe markt-bewegingen veroorzaken — althans in deze case van Iran-conflict-communicatie op de oliemarkt — niet door empirische data wordt ondersteund. Markten lijken te reageren op het onderliggende nieuws, niet op de presidentiële uitingen erover.
 
-Voor toekomstig onderzoek bevelen wij aan: (a) tick-level data combineren met nieuwswire-tijdstempels om sub-minute causale effecten te isoleren, (b) uitbreiding naar andere geopolitieke contexten (handelsoorlogen, NAVO-spanningen) voor generaliseerbaarheid, en (c) vergelijkende analyse met andere politiek dominante accounts.
+De per-aandeel event-study (§4.5) nuanceert dit beeld op één punt: waar het indexniveau geen effect toont, is er op bedrijfsniveau wél een — overwegend negatieve — richting zichtbaar, met effectgroottes die een ordegrootte boven het indexniveau liggen. De bevinding blijft statistisch zwak door kleine samples per bedrijf en overleeft geen multiple-testing-correctie, maar suggereert dat aggregatie over de markt een reëel bedrijfsspecifiek signaal verbergt.
+
+Voor toekomstig onderzoek bevelen wij aan: (a) tick-level data combineren met nieuwswire-tijdstempels om sub-minute causale effecten te isoleren, (b) uitbreiding naar andere geopolitieke contexten (handelsoorlogen, NAVO-spanningen) voor generaliseerbaarheid, (c) vergelijkende analyse met andere politiek dominante accounts, en (d) het bedrijfsspecifieke effect aanscherpen door per mention-dag de toon (§4.2) en de news-timing te koppelen — is de daling groter bij negatief-getoonde en niet-reactieve posts? — wat tevens de statistische power verhoogt door ondernemingen op toon te poolen.
 
 ---
 
@@ -256,6 +272,8 @@ Op basis van 134 Iran-posts en 435 controle-posts in een 60-daagse intraday-wind
 Een secundaire bevinding is een significant negatief effect op de energie-sector ETF (Δμ −56,9 bp, p = 0,007), consistent met de hypothese dat Trumps pro-productie-rhetoriek bearish is voor bestaande olieproducenten zelfs wanneer ruwe-olie zelf weinig reageert.
 
 Toetsen voor informed trading (volume-anomalie en price-timing) leveren geen robuust patroon dat consistent zou zijn met systematische voor-positionering rond Trumps posts.
+
+Een uitbreiding naar het niveau van individuele aandelen toont een complementair beeld: waar de brede index geen effect vertoont, vertonen afzonderlijke door Trump genoemde ondernemingen wél een — overwegend negatieve — bedrijfsspecifieke reactie. Het effect is het duidelijkst bij Tesla (mediaan −83 bp, Mann-Whitney p = 0,057) en DJT (CAR_3d −158 bp, p = 0,037). Geen enkel resultaat overleeft Bonferroni-correctie, maar de magnitude (een ordegrootte boven het indexniveau) bevestigt dat marktbrede aggregatie individuele effecten maskeert.
 
 Naast deze empirische bevindingen heeft dit onderzoek een herbruikbare classificatie-pipeline opgeleverd: een sentiment-classifier met 83% accuratesse en een toxiciteits-classifier met AUC 0,91, beide gebaseerd op interpreteerbare lineaire modellen die in productie kunnen worden ingezet voor real-time scoring van nieuwe posts.
 
@@ -293,9 +311,10 @@ Volledige broncode beschikbaar op GitHub:
 **https://github.com/QuintenFritz/truthsocial-marketimpact**
 
 Belangrijke onderdelen:
-- `notebooks/01–10` — analyse-notebooks per fase.
+- `notebooks/01–14` — analyse-notebooks per fase.
 - `src/data/` — Python-modules voor dataverzameling en preprocessing.
 - `src/data/scrape_trumpstruth_rss.py` — eigen scraper voor live posts.
+- `src/features/company_mentions.py` — bedrijf→ticker-mapping voor de per-aandeel event-study (§4.5).
 - `models/sentiment/` en `models/toxicity/` — getrainde classifiers.
 
 De tag `v1.0-market-prediction` markeert een snapshot van een initiële (verworpen) onderzoeksrichting waarin wij de algemene marktimpact van alle Trump-posts (niet uitsluitend Iran-gerelateerd) probeerden te modelleren via Random Forest. Deze richting werd verworpen wegens onvoldoende signaal-tot-ruis-verhouding (AUC circa 0,55), waarna de focus verschoof naar de Iran-conflict event-study die in dit document wordt gerapporteerd.
@@ -312,6 +331,7 @@ pip install -e ".[dev,dashboard,nlp]"
 # Plaats Kaggle CSV in data/raw/trump_truth_archive.csv
 python -m src.data.scrape_trumpstruth_rss --start 2026-02-28
 
+# Run notebooks 01 t/m 14 in volgorde
 jupyter lab notebooks/
 # Run notebooks 01 t/m 10 in volgorde
 ```
