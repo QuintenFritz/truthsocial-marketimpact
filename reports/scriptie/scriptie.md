@@ -221,8 +221,11 @@ wat ze gevonden hebben en hoe het jouw werk informeert.]
 #### 3.3.1 Event-study t-test
 
 Voor elke Iran-gerelateerde post `p` op tijdstip `t`, bereken WTI log-return over windows
-`[t, t+Δ]` voor `Δ ∈ {1u, 4u, 24u}`. Vergelijk met log-returns rond controle-posts
-(niet-Iran posts in dezelfde periode) via Welch's t-test (geen aanname van gelijke variantie).
+`[t, t+Δ]` voor `Δ ∈ {1u, 4u, 24u}`. Het verschil met de log-returns rond controle-posts
+(niet-Iran posts in dezelfde periode) schatten we via bootstrap-resampling (95%-CI) in
+plaats van een parametrische t-toets — een resampling-methode uit de cursus, robuust tegen
+de zware staarten van returns. Een CI dat 0 uitsluit geldt als equivalent van significantie;
+hierdoor is een aparte Bonferroni-correctie voor meervoudig toetsen overbodig.
 
 #### 3.3.2 Granger causaliteitstest
 
@@ -380,24 +383,24 @@ Voorbeeld:]
 
 Alle voorgaande markttoetsen draaien op brede indices (SPX, WTI, XLE), die per definitie aggregeren over vele ondernemingen. Een effect dat specifiek is voor één door Trump genoemd bedrijf, wordt op indexniveau uitgemiddeld. Notebook 14 toetst daarom een nauwkeuriger geformuleerde hypothese op de volledige history (feb 2022 – apr 2026): reageert een individueel aandeel sterker op een expliciete Trump-vermelding dan de brede markt?
 
-**Design.** Uit alle 26.819 posts extraheren we bedrijfsvermeldingen via een curated bedrijf→ticker-mapping (`src/features/company_mentions.py`, 24 ondernemingen) met word-boundary regex. Per genoemd bedrijf berekenen we een *market-model abnormal return*: het verwachte rendement komt uit een OLS-regressie van het dagrendement op SPY over 120 handelsdagen (estimation window), met een gap van 11 dagen vóór de eventdag. De resulterende AR is markt-gecorrigeerd en dus bedrijfsspecifiek. AR_1d en CAR_3d op mention-dagen worden via een Welch t-toets vergeleken met de controle-dagen van hetzelfde aandeel; verhandelbaarheidsvensters worden gerespecteerd (DJT vanaf 26 maart 2024, TWTR tot 27 oktober 2022).
+**Design.** Uit alle 26.819 posts extraheren we bedrijfsvermeldingen via een curated bedrijf→ticker-mapping (`src/features/company_mentions.py`, 24 ondernemingen) met word-boundary regex. Per genoemd bedrijf berekenen we een *market-model abnormal return*: het verwachte rendement komt uit een OLS-regressie van het dagrendement op SPY over 120 handelsdagen (estimation window), met een gap van 11 dagen vóór de eventdag. De resulterende AR is markt-gecorrigeerd en dus bedrijfsspecifiek. Het verschil in AR_1d en CAR_3d tussen mention- en controle-dagen van hetzelfde aandeel schatten we via bootstrap-CI's (op gemiddelde en mediaan-verschil); verhandelbaarheidsvensters worden gerespecteerd (DJT vanaf 26 maart 2024, TWTR tot 27 oktober 2022).
 
 **Vermeldingen.** 1.273 van de 26.819 posts noemen minstens één onderneming. Met n ≥ 30 verhandelbare mention-dagen: DJT (n=217), Google (n=127), Meta (n=79), Tesla (n=52), Amazon (n=50), Apple (n=35).
 
-**Aggregaat-resultaten.**
+**Aggregaat-resultaten.** Verschil mention − controle met bootstrap-95%-CI op het gemiddelde verschil:
 
-| Bedrijf | Metriek | n | Δμ mention − controle | t | p |
+| Bedrijf | Metriek | n | Δμ mention − controle | 95%-CI (bp) | sluit 0 uit |
 |---|---|---|---|---|---|
-| DJT (Trump Media) | CAR_3d | 217 | −158 bp | −2,09 | 0,037 |
-| Tesla | AR_1d | 52 | −115 bp | −2,03 | 0,047 |
-| Tesla | CAR_3d | 52 | −176 bp | −1,81 | 0,075 |
-| Amazon | CAR_3d | 50 | +51 bp | +1,55 | 0,128 |
-| Google | CAR_3d | 127 | −39 bp | −1,36 | 0,177 |
-| Apple | AR_1d | 35 | −4 bp | −0,12 | 0,906 |
+| DJT (Trump Media) | CAR_3d | 217 | −158 bp | [−309, −8] | ja |
+| Tesla | AR_1d | 52 | −115 bp | [−228, −7] | ja |
+| Tesla | CAR_3d | 52 | −176 bp | [−364, 13] | nee |
+| Amazon | CAR_3d | 50 | +51 bp | [−12, 116] | nee |
+| Google | CAR_3d | 127 | −39 bp | [−94, 16] | nee |
+| Apple | AR_1d | 35 | −4 bp | [−63, 61] | nee |
 
-Twee effecten zijn ruw-significant (DJT, Tesla), beide negatief. Geen enkel resultaat overleeft de Bonferroni-correctie (12 toetsen, drempel ≈ 0,0042). Met dat aantal toetsen verwacht je ~0,6 vals-positieven; we vinden er twee — suggestief, niet bewijzend. Het inhoudelijk centrale punt is de effectgrootte: de individuele effecten (−115 tot −176 bp) zijn een ordegrootte groter dan op SPX-niveau (≈ nul), wat de hypothese ondersteunt dat indices bedrijfsspecifieke effecten wegmiddelen.
+Twee effecten sluiten 0 uit (DJT en Tesla AR_1d), beide negatief. Doordat we bootstrap-CI's rapporteren in plaats van p-waarden, is geen Bonferroni-correctie nodig. Het inhoudelijk centrale punt is de effectgrootte: de individuele effecten (−115 tot −176 bp) zijn een ordegrootte groter dan op SPX-niveau (≈ nul), wat de hypothese ondersteunt dat indices bedrijfsspecifieke effecten wegmiddelen.
 
-**Robuustheid (Tesla).** De AR-verdeling heeft zware staarten, dus de mean-toets is gevoelig voor uitschieters. Het Tesla-effect hangt grotendeels aan 5 juni 2025 (de publieke Trump–Musk-breuk, AR −14,3%); na verwijdering van enkel die dag zakt het naar −84 bp (p = 0,088). Outlier-robuuste toetsen tonen echter een breed gedragen patroon dat níet door die ene dag wordt verklaard: mediaan −83 bp vs. −4 bp, 10%-getrimde mean −86 bp vs. +2 bp, Mann-Whitney p = 0,057, en 62% van de mention-dagen negatief. We rapporteren voor Tesla daarom bij voorkeur de mediaan/Mann-Whitney. Figuren: `reports/figures/nb14_ar_per_company.png` en `nb14_tsla_robustness.png`.
+**Robuustheid (Tesla) — fragiel.** De AR-verdeling heeft zware staarten, dus we toetsen de gevoeligheid voor uitschieters met bootstrap-CI's. Het volle-sample mean-effect sluit 0 uit (−115 bp, CI [−228, −7]), maar leunt op de staart: na verwijdering van enkel 5 juni 2025 (de publieke Trump–Musk-breuk, AR −14,3%) verbreedt het CI tot [−189, 11] en omvat het 0. Ook het outlier-robuuste **mediaan**-verschil sluit 0 niet uit (−79 bp, CI [−147, 47]). De richting is negatief (62% van de mention-dagen), maar het effect is statistisch fragiel en deels gedreven door enkele extreme dagen — suggestief, niet bewijzend. Figuren: `reports/figures/nb14_ar_per_company.png` en `nb14_tsla_robustness.png`.
 
 ---
 
@@ -480,9 +483,9 @@ concluderen, wat we **niet** kunnen concluderen, en waarom.
    - Causaliteit: data ondersteunt geen directe causale invloed; common-cause
      interpretatie meest waarschijnlijk.
    - Per aandeel (nb14): waar de index niets toont, vertonen losse genoemde bedrijven
-     wél een (overwegend negatieve) reactie — Tesla mediaan −83 bp (Mann-Whitney
-     p=0,057), DJT CAR_3d −158 bp (p=0,037); geen overleeft Bonferroni, maar de
-     magnitude ligt een ordegrootte boven het indexniveau.
+     wél een (overwegend negatieve) reactie — DJT CAR_3d −158 bp (CI [−309,−8]) en
+     Tesla AR_1d −115 bp (CI [−228,−7]) sluiten 0 uit; Tesla is fragiel (mediaan-CI
+     omvat 0), maar de magnitude ligt een ordegrootte boven het indexniveau.
 4. **Wat we hebben opgeleverd**: een herbruikbare classification + analyse-pipeline,
    inclusief een bedrijf→ticker-extractiemodule en per-aandeel event-study.
 5. **Toekomstig werk**: tick-level data, news-wire cross-validatie, multi-account

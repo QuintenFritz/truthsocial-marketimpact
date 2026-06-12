@@ -122,7 +122,9 @@ Tot nu toe keek ik steeds naar de héle beurs (de S&P 500) of naar de olieprijs.
 
 Ik liet de computer alle 26.819 berichten doorzoeken op bedrijfsnamen (Apple, Tesla, Boeing, enzovoort) en koppelde elke vermelding aan de koers van dat bedrijf. Belangrijk trucje: ik trek eerst de algemene beursbeweging van die dag eraf, zodat ik alleen het *bedrijfseigen* effect overhoud.
 
-Het resultaat is opvallender dan op beursniveau. **Tesla** springt eruit: op dagen dat Trump Tesla of Elon Musk noemt, daalt het aandeel gemiddeld stevig — en dat blijft staan ook als ik de extreemste dag (5 juni 2025, de publieke ruzie tussen Trump en Musk) weglaat. Ook **Trump's eigen mediabedrijf (DJT)** zakt na zo'n bericht. De effecten zijn groot, maar ik heb per bedrijf weinig dagen, dus statistisch blijven ze "net niet hard bewezen". De les is mooi: op individuele aandelen zie je wél een richting waar de brede index niets liet zien.
+Het resultaat is opvallender dan op beursniveau. **Tesla** springt eruit: op dagen dat Trump Tesla of Elon Musk noemt, daalt het aandeel gemiddeld stevig. Eerlijk is eerlijk: dat effect leunt deels op één extreme dag (5 juni 2025, de publieke ruzie tussen Trump en Musk) — laat ik die weg, dan is het niet langer "hard". Ook **Trump's eigen mediabedrijf (DJT)** zakt na zo'n bericht. De effecten zijn groot in omvang, maar ik heb per bedrijf weinig dagen, dus statistisch blijven ze fragiel. De les is toch mooi: op individuele aandelen zie je wél een (negatieve) richting waar de brede index niets liet zien.
+
+Om dit te toetsen gebruik ik trouwens een techniek uit de cursus: **bootstrapping** (resampling). In plaats van een klassieke t-toets trek ik duizenden keer willekeurige steekproeven uit mijn data en kijk ik hoe zeker het verschil is. Sluit het "betrouwbaarheidsinterval" de nul uit, dan is het effect overtuigend; zit nul er nog in, dan niet. Voor Tesla zit nul er nét wel of nét niet in, afhankelijk van of ik die ene extreme dag meereken — vandaar "fragiel".
 
 ---
 
@@ -144,7 +146,7 @@ Bij de handelstarieven is het effect groter en zichtbaarder. Op Liberation Day d
 
 **3. Olie-aandelen vallen wel een beetje na Iran-tweets.** Niet de olieprijs zelf, maar de aandelen van olie-bedrijven (XLE) dalen licht en aanhoudend na Iran-berichten. Trump's Iran-berichten gaan vaak over de-escalatie en nucleaire onderhandelingen, wat de olie-risicopremie verlaagt.
 
-**4. Losse aandelen reageren wél, vooral Tesla.** Waar de brede beurs niets liet zien, daalt het Tesla-aandeel duidelijk op dagen dat Trump Tesla of Elon Musk noemt — gemiddeld zo'n 80 à 110 basispunten meer dan op gewone dagen, en dat blijft staan ook zonder de extreme ruzie-dag. Een index verbergt zulke bedrijfseigen effecten; pas als je inzoomt op het losse aandeel worden ze zichtbaar.
+**4. Losse aandelen reageren wél, vooral Tesla.** Waar de brede beurs niets liet zien, daalt het Tesla-aandeel duidelijk op dagen dat Trump Tesla of Elon Musk noemt — gemiddeld zo'n 80 à 110 basispunten meer dan op gewone dagen. Het effect is fragiel (het leunt deels op enkele extreme dagen), maar de richting is helder. Een index verbergt zulke bedrijfseigen effecten; pas als je inzoomt op het losse aandeel worden ze zichtbaar.
 
 ## Wat ik er niet over kan zeggen
 

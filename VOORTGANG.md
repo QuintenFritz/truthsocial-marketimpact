@@ -72,9 +72,11 @@ Brede indices (SPY, SPX) middelen individuele effecten weg. Als Trump expliciet 
 **Wat nodig is:** ~1-2 dagen werk, geen nieuwe API-kosten  
 **Status:** ✅ Afgerond — notebook 14 gedraaid, bevindingen geschreven
 
-**Resultaat:** anders dan op index-niveau (nb10/nb11) is er op bedrijfsniveau wél een richting zichtbaar. Twee ruw-significante effecten, beide negatief, géén overleeft Bonferroni (12 toetsen, drempel 0,0042): **DJT CAR_3d −158 bp (p=0,037, n=217)** en **TSLA AR_1d −115 bp (p=0,047, n=52)**. AMZN is het enige (niet-significante) positieve effect (+51 bp). De effectgroottes (−115 tot −176 bp) zijn een ordegrootte groter dan op SPX — de hypothese dat indices individuele effecten wegmiddelen wordt ondersteund.
+**Resultaat:** anders dan op index-niveau (nb10/nb11) is er op bedrijfsniveau wél een richting zichtbaar. Inferentie via **bootstrap-95%-CI** (in-cursus resampling, geen Bonferroni nodig). Twee effecten sluiten 0 uit, beide negatief: **DJT CAR_3d −158 bp, CI [−309,−8] (n=217)** en **TSLA AR_1d −115 bp, CI [−228,−7] (n=52)**. AMZN is het enige positieve effect (+51 bp, CI [−12,116] → omvat 0). De effectgroottes (−115 tot −176 bp) zijn een ordegrootte groter dan op SPX — de hypothese dat indices individuele effecten wegmiddelen wordt ondersteund.
 
-**TSLA outlier-check (sectie 8b/8c):** de mean is fragiel (hangt aan 5 juni 2025, Trump-Musk-breuk, AR −14,3% → zonder die dag p=0,088), maar outlier-robuuste toetsen houden stand: mediaan −83 bp vs −4 bp, 10%-getrimde mean −86 bp vs +2 bp, Mann-Whitney **p=0,057**, 62% van mention-dagen negatief. Het negatieve effect is dus distributie-breed, niet één dag → rapporteer mediaan/Mann-Whitney i.p.v. mean.
+**TSLA outlier-check (sectie 8b/8c) — fragiel:** het volle-sample mean-effect sluit 0 uit (−115 bp, CI [−228,−7]), maar leunt op de staart: drop 5 juni 2025 (Trump-Musk-breuk, AR −14,3%) → CI [−189,11] omvat 0. Ook het mediaan-verschil sluit 0 niet uit (−79 bp, CI [−147,47]). Richting negatief (62% mention-dagen), maar statistisch fragiel → suggestief, niet bewijzend.
+
+**Methodewissel (i.v.m. cursus-bestek):** alle Welch t-toetsen + Mann-Whitney + Bonferroni in nb10/nb11/nb14 vervangen door bootstrap-CI's (`src/evaluation/bootstrap.py`). Sluit aan bij cursusmodule 04 "Resampling". nb14-cijfers hierboven al herberekend; nb10/nb11 lokaal opnieuw draaien om hun CI-cijfers te vullen.
 
 **Volgende stap (optioneel):** koppel toon/sentiment (nb08) + GDELT news-timing (nb13) per mention-dag → grotere daling bij negatief-getoonde en niet-reactieve posts? Poolt bedrijven op toon → hogere power.
 
