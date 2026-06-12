@@ -61,17 +61,21 @@ def parse_rss(xml_text: str) -> list[dict]:
     return posts
 
 
-def fetch_range(start: date, end: date, throttle_sec: float = 1.0) -> pd.DataFrame:
-    """Haal posts op tussen [start, end] in chunks van max 31 dagen.
+def fetch_range(start: date, end: date, throttle_sec: float = 1.0,
+                chunk_days: int = 7) -> pd.DataFrame:
+    """Haal posts op tussen [start, end] in chunks van `chunk_days` dagen.
 
-    De RSS feed retourneert mogelijk een gelimiteerd aantal items per request.
-    We splitsen daarom op per maand om volledigheid te garanderen.
+    De RSS feed capt op ~100 items per request. Trump post in actieve periodes
+    meer dan 100 posts per maand, dus maand-chunks worden afgekapt (de oudste
+    posts in de chunk vallen weg). Kies `chunk_days` klein genoeg dat elke chunk
+    onder de 100-cap blijft (per week is meestal voldoende; per dag garandeert
+    volledigheid in zeer actieve periodes).
     """
     all_posts = []
     chunk_start = start
 
     while chunk_start <= end:
-        chunk_end = min(chunk_start + timedelta(days=30), end)
+        chunk_end = min(chunk_start + timedelta(days=chunk_days - 1), end)
         params = {
             "start_date": chunk_start.isoformat(),
             "end_date": chunk_end.isoformat(),
@@ -112,7 +116,9 @@ def clean_html_from_text(text: str) -> str:
 @click.option("--start", required=True, help="Start date YYYY-MM-DD")
 @click.option("--end", default=None, help="End date YYYY-MM-DD (default: today)")
 @click.option("--output", default=None, help="Output parquet path")
-def main(start: str, end: str | None, output: str | None) -> None:
+@click.option("--chunk-days", default=7, type=int,
+              help="Dagen per RSS-request. Kleiner = vollediger (omzeilt de ~100-item-cap). Default 7.")
+def main(start: str, end: str | None, output: str | None, chunk_days: int) -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
     start_date = pd.Timestamp(start).date()
@@ -125,7 +131,7 @@ def main(start: str, end: str | None, output: str | None) -> None:
     out_path = Path(output) if output else (project_root / "data" / "raw" / "posts_live.parquet")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    df = fetch_range(start_date, end_date)
+    df = fetch_range(start_date, end_date, chunk_days=chunk_days)
 
     if df.empty:
         logger.warning("Geen posts gevonden in [%s, %s]", start_date, end_date)
