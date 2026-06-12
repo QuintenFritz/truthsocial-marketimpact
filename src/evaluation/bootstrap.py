@@ -17,10 +17,13 @@ Voordelen:
 
 from __future__ import annotations
 
+import logging
 from typing import Callable
 
 import numpy as np
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def bootstrap_diff_ci(
@@ -59,7 +62,17 @@ def bootstrap_diff_ci(
     t = np.asarray(pd.Series(treatment).dropna(), dtype=float)
     c = np.asarray(pd.Series(control).dropna(), dtype=float)
     if len(t) == 0 or len(c) == 0:
-        raise ValueError("Beide groepen moeten minstens één observatie hebben.")
+        # Geen data in één van beide groepen: degradeer netjes naar NaN
+        # (net als scipy's t-toets) i.p.v. crashen, zodat de notebook doorloopt.
+        logger.warning(
+            "bootstrap_diff_ci: lege groep (n_treat=%d, n_ctrl=%d) -> NaN-resultaat.",
+            len(t), len(c),
+        )
+        return {
+            "obs_diff": float("nan"), "ci_low": float("nan"), "ci_high": float("nan"),
+            "excludes_zero": False, "p_boot": float("nan"),
+            "n_treat": int(len(t)), "n_ctrl": int(len(c)),
+        }
 
     obs = stat(t) - stat(c)
     diffs = np.empty(n_boot)
@@ -104,7 +117,9 @@ def bootstrap_ci(
     rng = np.random.default_rng(random_state)
     a = np.asarray(pd.Series(x).dropna(), dtype=float)
     if len(a) == 0:
-        raise ValueError("x moet minstens één observatie hebben.")
+        logger.warning("bootstrap_ci: lege input -> NaN-resultaat.")
+        return {"obs": float("nan"), "ci_low": float("nan"), "ci_high": float("nan"),
+                "excludes_h0": False, "n": 0}
     obs = stat(a)
     boot = np.empty(n_boot)
     for i in range(n_boot):
