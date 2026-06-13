@@ -94,7 +94,7 @@ De volgende datasets zijn direct beschikbaar — geen download nodig:
 Benodigd voor notebooks 01–14 (de event-studies en de per-aandeel-analyse gebruiken het volledige post-archief).
 
 1. Maak een gratis account op [kaggle.com](https://www.kaggle.com)
-2. Download: `https://www.kaggle.com/datasets/[DATASET-LINK-HIER]`
+2. Download: [Donald Trump's Truth Social Posts — NLP Analysis](https://www.kaggle.com/datasets/troykueh/donald-trumps-truth-social-posts-nlp-analysis) (troykueh)
 3. Sla op als `data/raw/trump_truth_archive.csv`
 4. Draai `01_data_collection.ipynb` om `data/raw/posts.parquet` te genereren
 
