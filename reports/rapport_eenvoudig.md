@@ -104,7 +104,7 @@ Twee dingen springen eruit: het gemiddelde effect over álle tarief-berichten is
 
 Tot nu toe keek ik per dag. Hier gebruik ik voor het eerst data **per minuut**, om te zien of de markt al binnen enkele minuten na een bericht reageert. Ik bereken de "cumulatieve abnormale return": hoeveel beweegt de koers op- of neerwaarts in de 5, 15, 30, 60 en 120 minuten na een post, vergeleken met de rust ervoor.
 
-Bevindingen (getoetst met bootstrap op de volledige data): bij tarief-berichten zie ik vooral verhoogd handelsvolume. Bij Iran-berichten zakt de **brede markt** in de twee uur na een bericht een beetje weg — gemiddeld zo'n 33 basispunten, en dat is statistisch betrouwbaar (het betrouwbaarheidsinterval ligt helemaal onder nul). De olie-aandelen (XLE) zakken op het oog véél harder, maar daar is de spreiding zo groot dat ik niet zeker kan zeggen dat het echt is — dus dat claim ik niet. Wat wél hard is: rond Iran-berichten wordt er duidelijk méér gehandeld in de energiesector. Ik test ook of escalatie- en de-escalatieberichten verschillen, maar dat onderscheid is te grof om iets hards over te zeggen.
+Bevindingen (getoetst met bootstrap op de volledige data): bij tarief-berichten zie ik vooral verhoogd handelsvolume. Bij Iran-berichten zakt de **brede markt** in de twee uur na een bericht een beetje weg — gemiddeld zo'n 32 basispunten, en dat is statistisch betrouwbaar (het betrouwbaarheidsinterval ligt helemaal onder nul). De olie-aandelen (XLE) zakken op het oog véél harder, maar daar is de spreiding zo groot dat ik niet zeker kan zeggen dat het echt is — dus dat claim ik niet. Wat wél hard is: rond Iran-berichten wordt er duidelijk méér gehandeld in de energiesector. Ik test ook of escalatie- en de-escalatieberichten verschillen, maar dat onderscheid is te grof om iets hards over te zeggen.
 
 ### Notebook 13 — Het sterkste bewijs: wie was er eerst, het nieuws of Trump?
 
@@ -144,7 +144,7 @@ Bij de handelstarieven is het effect groter en zichtbaarder. Op Liberation Day d
 
 **2. Negatieve berichten krijgen meer likes.** Zijn negatieve berichten krijgen mediaan 14.874 likes, zijn positieve maar 13.633 — een statistisch zeker verschil van ongeveer 9%. Dat geeft hem een prikkel om kwaad te schrijven. Een schoolvoorbeeld van de "negativity bias" op sociale media.
 
-**3. De markt zakt licht weg na Iran-tweets, en er wordt meer gehandeld.** Niet de olieprijs zelf, maar de brede markt daalt betrouwbaar een beetje (≈33 basispunten over twee uur) na Iran-berichten, en in de energiesector stijgt het handelsvolume. De daling is dus reëel maar klein, en past bij het beeld dat Trump reageert op het onderliggende nieuws — niet dat hij de markt aanstuurt.
+**3. De markt zakt licht weg na Iran-tweets, en er wordt meer gehandeld.** Niet de olieprijs zelf, maar de brede markt daalt betrouwbaar een beetje (≈32 basispunten over twee uur) na Iran-berichten, en in de energiesector stijgt het handelsvolume. De daling is dus reëel maar klein, en past bij het beeld dat Trump reageert op het onderliggende nieuws — niet dat hij de markt aanstuurt.
 
 **4. Losse aandelen reageren wél, vooral Tesla.** Waar de brede beurs niets liet zien, daalt het Tesla-aandeel duidelijk op dagen dat Trump Tesla of Elon Musk noemt — gemiddeld zo'n 80 à 110 basispunten meer dan op gewone dagen. Het effect is fragiel (het leunt deels op enkele extreme dagen), maar de richting is helder. Een index verbergt zulke bedrijfseigen effecten; pas als je inzoomt op het losse aandeel worden ze zichtbaar.
 
