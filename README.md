@@ -16,17 +16,21 @@ We richten ons op twee concrete contexten: de **Liberation Day importheffingency
 
 ## Resultaten in één oogopslag
 
+Alle toetsen gebruiken **bootstrap-95%-confidence-intervals** (resampling) i.p.v. parametrische t-toetsen; een CI dat 0 uitsluit geldt als "significant".
+
 | Analyse | Bevinding |
 |---|---|
-| Bulk event-study (dagelijks) | Geen statistisch significante gemiddelde returns na Iran- of tariff-posts |
-| Granger-causaliteit | Geen voorspellende kracht van post-frequentie op marktbewegingen |
-| Intraday CAR (1-minuut) | Volume-ratio tariff-posts = **1,50** — sterkste significante effect |
-| Mean reversion top-posts | Geen reversion → permanente informatieverwerking (EMH-consistent) |
+| Bulk event-study (dagelijks) | Geen significant verschil na Iran- of tariff-posts (alle CI's omvatten 0) |
+| Iran intraday-returns | Niet consistent gericht: uur-niveau significant positief (SPY t+4u +14 bp, XLE t+24u +44 bp), minuut-CAR significant negatief (SPY −32 bp/2u); WTI nergens significant |
+| Volume rond posts | **Robuust:** tariff SPY +0,32σ, Iran XLE +0,25σ, tariff volume-ratio = **1,50** — alle CI's sluiten 0/1 uit |
+| Granger-causaliteit | Posts voorspellen returns niet; WTI-returns voorspellen wél Trumps post-frequentie (lag 2–4 u) → reactief |
+| Per aandeel (nb14) | Waar de index niets toont, vertonen losse genoemde bedrijven wél richting: DJT CAR_3d −158 bp en TSLA AR_1d −115 bp (CI's sluiten 0 uit); TSLA fragiel |
 | GDELT news-timing | In **100% van gevallen** postte Trump ná het nieuws, gemiddeld **~3 uur later** |
 
-**Hoofdconclusie:** Trump fungeert als nieuwsreageerder, niet als marktbeweger. De gevonden correlaties reflecteren een gemeenschappelijke oorzaak (onderliggend nieuws), geen directe causaliteit.
+**Hoofdconclusie:** Trump fungeert als nieuwsreageerder, niet als marktbeweger. Er is geen robuust, consistent gericht koerseffect; wat overeind blijft is verhoogd handelsvolume rond posts en een reactief Granger-patroon. De correlaties reflecteren een gemeenschappelijke oorzaak (onderliggend nieuws), geen directe causaliteit.
 
-Lees het volledige verslag: [`reports/rapport_normaal.md`](reports/rapport_normaal.md)  
+Volledige scriptie: [`reports/scriptie/scriptie_full.md`](reports/scriptie/scriptie_full.md) (ook als PDF)  
+Onderzoeksverslag: [`reports/rapport_normaal.md`](reports/rapport_normaal.md)  
 Toegankelijke samenvatting: [`reports/rapport_eenvoudig.md`](reports/rapport_eenvoudig.md)
 
 ---
@@ -49,7 +53,12 @@ truthsocial-marketimpact/
 │   ├── 10_iran_oil_event_study.ipynb
 │   ├── 11_tariffs_liberation_day_event_study.ipynb
 │   ├── 12_intraday_event_study.ipynb
-│   └── 13_gdelt_news_timing.ipynb
+│   ├── 13_gdelt_news_timing.ipynb
+│   └── 14_individual_stocks_event_study.ipynb   # Event-study per genoemd aandeel
+│
+├── src/
+│   ├── features/company_mentions.py    # Bedrijf→ticker-mapping (per-aandeel event-study)
+│   └── evaluation/bootstrap.py         # Bootstrap-CI's voor groeps-/event-verschillen
 │
 ├── scripts/
 │   ├── fetch_intraday_twelvedata.py    # 1-minuut marktdata via Twelve Data API
@@ -62,6 +71,8 @@ truthsocial-marketimpact/
 ├── reports/
 │   ├── rapport_normaal.md              # Volledig onderzoeksverslag
 │   ├── rapport_eenvoudig.md            # Toegankelijke samenvatting
+│   ├── scriptie/scriptie_full.md       # Volledige scriptie (+ scriptie_full.pdf)
+│   ├── notebook_gids.docx              # Per-notebook uitleg met grafieken
 │   └── figures/                        # Alle gegenereerde grafieken
 │
 └── models/                             # Getrainde classifiers (joblib)
@@ -77,8 +88,8 @@ De volgende datasets zijn direct beschikbaar — geen download nodig:
 
 | Bestand | Inhoud | Grootte |
 |---|---|---|
-| `data/raw/market.parquet` | Dagelijkse OHLCV voor SPX, WTI, DXY, VIX (2022–2026) | 196 KB |
-| `data/raw/posts_live.parquet` | Live-gescraper Iran-posts (feb–jun 2026) | 40 KB |
+| `data/raw/market.parquet` | Dagelijkse OHLCV voor SPX, WTI, DXY, VIX (2022–2026) | 212 KB |
+| `data/raw/posts_live.parquet` | Gescrapte posts feb–jun 2026 (2.161 posts, incl. Iran-periode) | 732 KB |
 | `data/processed/gdelt_news_timing.parquet` | GDELT news-timing analyse (128 posts) | 36 KB |
 | `data/processed/intraday_spy_tariff_1min.parquet` | 1-minuut SPY rond tariff-posts | 296 KB |
 | `data/processed/intraday_spy_iran_1min.parquet` | 1-minuut SPY rond Iran-posts | 156 KB |
@@ -87,7 +98,7 @@ De volgende datasets zijn direct beschikbaar — geen download nodig:
 
 ### Handmatig te downloaden: Kaggle archief (~17 MB)
 
-Benodigd voor notebooks 01–11.
+Benodigd voor notebooks 01–14 (de event-studies en de per-aandeel-analyse gebruiken het volledige post-archief).
 
 1. Maak een gratis account op [kaggle.com](https://www.kaggle.com)
 2. Download: `https://www.kaggle.com/datasets/[DATASET-LINK-HIER]`
@@ -141,29 +152,32 @@ joblib>=1.3
 
 ## Notebooks uitvoeren
 
-Voor een volledige reproductie, draai de notebooks in volgorde 01 → 13.
+Voor een volledige reproductie, draai de notebooks in volgorde 01 → 14. Draai elke notebook bij voorkeur met **Restart & Run All** om volgorde-afhankelijke fouten te vermijden.
 
-Voor de **kernresultaten** volstaan deze vier notebooks (alle benodigde data is meegeleverd):
+Voor de **kernresultaten** volstaan deze notebooks (alle benodigde data is meegeleverd):
 
 | Notebook | Kernresultaten |
 |---|---|
-| `12_intraday_event_study.ipynb` | CAR-profielen, volume-ratio, mean reversion |
+| `12_intraday_event_study.ipynb` | CAR-profielen (bootstrap-CI), volume-ratio, mean reversion |
 | `13_gdelt_news_timing.ipynb` | GDELT news-timing: lag-distributie, reactief vs. geen_nieuws |
-| `10_iran_oil_event_study.ipynb` | Iran event-study dagelijks (vereist Kaggle CSV) |
-| `11_tariffs_liberation_day_event_study.ipynb` | Liberation Day event-study (vereist Kaggle CSV) |
+| `10_iran_oil_event_study.ipynb` | Iran event-study + volume (vereist Kaggle CSV) |
+| `11_tariffs_liberation_day_event_study.ipynb` | Liberation Day event-study + volume (vereist Kaggle CSV) |
+| `14_individual_stocks_event_study.ipynb` | Event-study per genoemd aandeel (vereist Kaggle CSV) |
 
 ---
 
 ## Methoden
 
+Inferentie gebeurt overal via **bootstrap-confidence-intervals** (resampling, `src/evaluation/bootstrap.py`) i.p.v. parametrische t-toetsen of Mann-Whitney — robuust tegen de zware staarten van returns en zonder aparte Bonferroni-correctie.
+
 | # | Methode | Notebook |
 |---|---|---|
-| 1 | Dagelijkse event-study (Welch t-test) | nb 10, 11 |
+| 1 | Event-study (bootstrap-CI, dagelijks + uur) | nb 10, 11 |
 | 2 | Granger-causaliteitstoets | nb 10, 11 |
-| 3 | Volume-anomalie (z-score) | nb 10, 11 |
-| 4 | Price-timing test | nb 10, 11 |
-| 5 | Intraday CAR-analyse (1-minuut) | nb 12 |
-| 6 | GDELT news-timing | nb 13 |
+| 3 | Volume-anomalie + price-timing (bootstrap-CI) | nb 10, 11 |
+| 4 | Intraday CAR-analyse 1-minuut (bootstrap-CI) | nb 12 |
+| 5 | GDELT news-timing | nb 13 |
+| 6 | Event-study per individueel aandeel (market-model AR + bootstrap-CI) | nb 14 |
 
 Classifiers: sentiment (83% acc.) en toxiciteit (86% acc., AUC 0,91) via L1-logistische regressie op TF-IDF features — zie notebooks 08 en 09.
 
