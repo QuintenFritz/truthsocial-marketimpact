@@ -38,7 +38,9 @@ def load_aligned_posts() -> pd.DataFrame:
 
 @st.cache_data
 def load_top_features(asset: str, window: str) -> pd.DataFrame:
-    path = PROJECT_ROOT / "reports" / "figures" / f"top_features_{asset}_{window}.csv"
+    # Notebook 06 schrijft weg als top_features_{target}.csv met target = ar_1d_/car_3d_ + asset
+    prefix = "ar_1d" if window == "1d" else "car_3d"
+    path = PROJECT_ROOT / "reports" / "figures" / f"top_features_{prefix}_{asset}.csv"
     if not path.exists():
         return pd.DataFrame()
     return pd.read_csv(path)
@@ -66,7 +68,7 @@ with tab2:
     else:
         query = st.text_input("Zoek post (substring match):")
         if query:
-            mask = posts["text_clean"].str.contains(query.lower(), na=False)
+            mask = posts["text"].str.contains(query, case=False, na=False)
             st.write(f"{mask.sum()} matches gevonden")
             st.dataframe(posts[mask].head(50), use_container_width=True)
         else:
