@@ -29,9 +29,7 @@ Alle toetsen gebruiken **bootstrap-95%-confidence-intervals** (resampling) i.p.v
 
 **Hoofdconclusie:** Trump fungeert als nieuwsreageerder, niet als marktbeweger. Er is geen robuust, consistent gericht koerseffect; wat overeind blijft is verhoogd handelsvolume rond posts en een reactief Granger-patroon. De correlaties reflecteren een gemeenschappelijke oorzaak (onderliggend nieuws), geen directe causaliteit.
 
-Volledige scriptie: [`reports/scriptie/scriptie_full.md`](reports/scriptie/scriptie_full.md) (ook als PDF)  
-Onderzoeksverslag: [`reports/rapport_normaal.md`](reports/rapport_normaal.md)  
-Toegankelijke samenvatting: [`reports/rapport_eenvoudig.md`](reports/rapport_eenvoudig.md)
+De volledige scriptie en onderzoeksverslagen worden na de mondelinge verdediging (23 juni 2026) gepubliceerd; tot dan beschikbaar op aanvraag.
 
 ---
 
@@ -68,15 +66,10 @@ truthsocial-marketimpact/
 │   ├── raw/                            # Brondata (zie sectie Data hieronder)
 │   └── processed/                      # Afgeleide datasets (kleine bestanden meegeleverd)
 │
-├── reports/
-│   ├── rapport_normaal.md              # Volledig onderzoeksverslag
-│   ├── rapport_eenvoudig.md            # Toegankelijke samenvatting
-│   ├── scriptie/scriptie_full.md       # Volledige scriptie (+ scriptie_full.pdf)
-│   ├── notebook_gids.docx              # Per-notebook uitleg met grafieken
-│   └── figures/                        # Alle gegenereerde grafieken
-│
 └── models/                             # Getrainde classifiers (joblib)
 ```
+
+> De map `reports/` (scriptie, onderzoeksverslagen, figuren) wordt na de verdediging op 23 juni 2026 toegevoegd.
 
 ---
 
