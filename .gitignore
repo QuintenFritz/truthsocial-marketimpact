@@ -62,3 +62,6 @@ dist/
 # Streamlit
 .streamlit/secrets.toml
 *.bak
+
+# Reports privé houden tot presentatie (23 juni)
+reports/
