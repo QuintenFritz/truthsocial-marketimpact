@@ -76,16 +76,16 @@
 
 **Schrijf hier over:**
 - De opkomst van social media als communicatiekanaal voor politici (Twitter/X tijdens Trump's eerste termijn, Truth Social na de Twitter-ban in 2021).
-- Het feit dat individuele posts van presidentiële accounts in het verleden meetbare marktbewegingen hebben veroorzaakt (verwijs naar Born et al. 2017 over Trump tweets).
+- Het feit dat individuele posts van presidentiële accounts in het verleden zijn onderzocht op marktreacties (verwijs naar Born, Myers & Clark, 2017 over Trump tweets — die vooral kortstondige, efficiënte reacties vonden).
 - Hoe het Iran-conflict (start 28 februari 2026) een unieke onderzoekscontext creëert: een actueel geopolitiek event waarin energie-prijzen volatiel zijn en de Amerikaanse president actief commentariëert op het verloop.
 
 **Suggestie eerste paragraaf**:
 
 > *Met de opkomst van directe sociale media als primair communicatiekanaal voor
 > staatshoofden is de relatie tussen presidentiële uitingen en financiële markten
-> een actief onderzoeksgebied geworden. Born et al. (2017) toonden aan dat tweets
-> van Donald Trump tijdens zijn eerste presidentschap meetbare abnormale rendementen
-> veroorzaakten in specifieke aandelen en sectoren. Na zijn verbanning van Twitter
+> een actief onderzoeksgebied geworden. Born, Myers & Clark (2017) vonden dat tweets
+> van Donald Trump over specifieke bedrijven meetbare, maar overwegend kortstondige
+> abnormale rendementen opleverden, grotendeels in lijn met de efficiënte-markthypothese. Na zijn verbanning van Twitter
 > in 2021 verplaatste Trump zijn communicatie naar het door hem opgerichte platform
 > Truth Social, waarvan de marktimpact tot dusver veel minder empirisch onderzocht
 > is. Het uitbreken van een gewapend conflict met Iran op 28 februari 2026 creëert
@@ -143,7 +143,7 @@ wat ze gevonden hebben en hoe het jouw werk informeert.]
   woordenlijsten en methodologische review. Argumentatie waarom generieke
   sentiment-tools tekortschieten in financiële context.
 - **Araci (2019)** — *FinBERT*. Pre-trained transformer voor financial text.
-- **Ke, Kelly, Xiu (2023)** — *Predicting Returns with Text Data*. State-of-the-art
+- **Ke, Kelly, Xiu (2019, NBER WP 26186)** — *Predicting Returns with Text Data*. State-of-the-art
   comparison van TF-IDF, lexicon en deep learning approaches.
 
 ### 2.3 Interpretability en methodologische kritiek
@@ -513,6 +513,9 @@ models. *arXiv preprint* arXiv:1908.10063.
 Bollen, J., Mao, H., & Zeng, X.-J. (2011). Twitter mood predicts the stock market.
 *Journal of Computational Science, 2*(1), 1–8. https://doi.org/10.1016/j.jocs.2010.12.007
 
+Born, J. A., Myers, D. H., & Clark, W. J. (2017). Trump tweets and the efficient market
+hypothesis. *Algorithmic Finance, 6*(3–4), 103–109. https://doi.org/10.3233/AF-170211
+
 Breiman, L. (2001). Random forests. *Machine Learning, 45*(1), 5–32.
 https://doi.org/10.1023/A:1010933404324
 
@@ -520,8 +523,8 @@ Jain, S., & Wallace, B. C. (2019). Attention is not explanation. In *Proceedings
 the 2019 Conference of the North American Chapter of the Association for Computational
 Linguistics* (pp. 3543–3556).
 
-Ke, Z., Kelly, B., & Xiu, D. (2023). Predicting returns with text data. *Journal of
-Finance, 78*(5), 3551–3593. https://doi.org/10.1111/jofi.13232
+Ke, Z. T., Kelly, B. T., & Xiu, D. (2019). *Predicting returns with text data* (NBER
+Working Paper No. 26186). National Bureau of Economic Research. https://doi.org/10.3386/w26186
 
 Loughran, T., & McDonald, B. (2011). When is a liability not a liability? Textual
 analysis, dictionaries, and 10-K filings. *The Journal of Finance, 66*(1), 35–65.

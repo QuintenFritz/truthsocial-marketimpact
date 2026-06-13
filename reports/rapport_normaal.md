@@ -8,7 +8,7 @@
 
 ## 1. Wat we onderzochten
 
-De oorspronkelijke vraag was breed: *kunnen we via Donald Trump's berichten op Truth Social voorspellen wat er met de aandelenkoers (S&P 500) en de olieprijs gebeurt?* De aanleiding was het publieke vermoeden dat presidentiële sociale media meetbare invloed hebben op financiële markten — een hypothese die voor zijn Twitter-periode (2017–2020) inderdaad door onderzoek (Born et al., 2017) is bevestigd, maar voor Truth Social nog grotendeels onbeantwoord is.
+De oorspronkelijke vraag was breed: *kunnen we via Donald Trump's berichten op Truth Social voorspellen wat er met de aandelenkoers (S&P 500) en de olieprijs gebeurt?* De aanleiding was het publieke vermoeden dat presidentiële sociale media meetbare invloed hebben op financiële markten — een hypothese die voor zijn Twitter-periode (2017–2020) is onderzocht (Born, Myers & Clark, 2017) — met overwegend kortstondige, efficiënt verwerkte koersreacties — maar voor Truth Social nog grotendeels onbeantwoord is.
 
 Tijdens het onderzoek hebben we de vraag driemaal aangescherpt. Eerst zijn we afgestapt van het generieke voorspellings-onderzoek (te weinig signaal in algemene posts). Vervolgens richtten we ons op twee specifieke, actuele contexten: (1) de Iran-oorlog die op 28 februari 2026 uitbrak, en (2) de Liberation Day importheffingencyclus die op 2 april 2025 van start ging. Voor beide contexten testten we dezelfde kernhypothese: *gebruikt Trump zijn Truth Social account doelbewust om marktprijzen te beïnvloeden?* Ten slotte breidden we de methodiek uit met minuut-level marktdata om intraday reacties te meten.
 

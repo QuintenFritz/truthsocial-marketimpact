@@ -39,7 +39,7 @@ De meest parsimonieuze interpretatie is dat onderliggende geopolitieke gebeurten
 
 ### 1.1 Context
 
-Met de opkomst van sociale media als primair communicatiekanaal voor staatshoofden is de relatie tussen presidentiële uitingen en financiële markten een actief onderzoeksgebied geworden. Born, Müller, Schularick en Sedláček (gepubliceerd circa 2017) toonden aan dat tweets van Donald Trump tijdens zijn eerste presidentschap meetbare abnormale rendementen veroorzaakten in specifieke aandelen en sectoren. Sentimentanalyse op grote tekstcorpora — variërend van krantenartikelen (Tetlock, 2007) tot Twitter-tijdlijnen (Bollen, Mao en Zeng, 2011) — heeft herhaaldelijk een voorspellende relatie aangetoond met financiële markten, hoewel de effectgrootte en robuustheid sterk variëren.
+Met de opkomst van sociale media als primair communicatiekanaal voor staatshoofden is de relatie tussen presidentiële uitingen en financiële markten een actief onderzoeksgebied geworden. Born, Myers en Clark (2017) onderzochten in *Trump tweets and the efficient market hypothesis* de koersreacties van specifieke, door Trump genoemde bedrijven op zijn tweets tijdens zijn eerste presidentschap; zij vonden weliswaar meetbare abnormale rendementen, maar overwegend klein en kortstondig — grotendeels in lijn met de efficiënte-markthypothese. Sentimentanalyse op grote tekstcorpora — variërend van krantenartikelen (Tetlock, 2007) tot Twitter-tijdlijnen (Bollen, Mao en Zeng, 2011) — heeft herhaaldelijk een voorspellende relatie aangetoond met financiële markten, hoewel de effectgrootte en robuustheid sterk variëren.
 
 Na zijn verbanning van Twitter in 2021 verplaatste Trump zijn directe communicatie naar het door hem opgerichte platform Truth Social. De marktimpact van deze nieuwe communicatie-omgeving is empirisch veel minder onderzocht dan zijn Twitter-periode. Het uitbreken van een gewapend conflict met Iran op 28 februari 2026 creëert een unieke onderzoekscontext: een actueel geopolitiek evenement waarin de oliemarkt hoog volatiel is en de huidige president — opnieuw Donald Trump — frequent commentaar levert via Truth Social. Het publieke debat over de aard van deze communicatie is gepolariseerd: sommige commentatoren stellen dat Trumps posts marktbewegingen veroorzaken of zelfs voorafgaand handelsgedrag mogelijk maken; anderen stellen dat hij vooral reactief commentarieert op gebeurtenissen die hij niet zelf in gang heeft gezet.
 
@@ -79,7 +79,7 @@ Tetlock (2007) leverde een methodologische blauwdruk voor textuele sentimentanal
 
 Loughran en McDonald (2011, 2016) ontwikkelden domeinspecifieke financiële sentiment-woordenlijsten en argumenteerden dat generieke sentiment-tools (zoals Harvard IV-4) systematisch tekortschieten op financiële tekst. Bedrijfsspecifieke termen als "liability", "loss" of "risk" hebben in financial-disclosure-context een andere lading dan in algemeen taalgebruik. Hun survey-paper (2016) biedt een meta-analyse van 127 studies en wijst op terugkerende methodologische valkuilen: selectiebias, in-sample overfitting en look-ahead bias.
 
-Araci (2019) introduceerde FinBERT, een pre-trained transformer-model gefinetuned op het Financial PhraseBank-corpus dat 92% accuratesse haalde tegen 75% voor lexicon-gebaseerde methodes. Ke, Kelly en Xiu (2023) toonden in *Predicting Returns with Text Data* aan dat transformer-gebaseerde sentimentsignalen lineaire TF-IDF-baselines met een factor 2–3 overtreffen in out-of-sample voorspellende R².
+Araci (2019) introduceerde FinBERT, een pre-trained transformer-model gefinetuned op het Financial PhraseBank-corpus dat 92% accuratesse haalde tegen 75% voor lexicon-gebaseerde methodes. Ke, Kelly en Xiu (2019, NBER Working Paper nr. 26186) toonden in *Predicting Returns with Text Data* aan dat hun op tekst gebaseerde sentimentmethode (SESTM) sterke out-of-sample voorspellende waarde heeft ten opzichte van eenvoudiger baselines.
 
 ### 2.3 Interpretability en methodologische kritiek
 
@@ -291,11 +291,13 @@ Araci, D. (2019). FinBERT: Financial sentiment analysis with pre-trained languag
 
 Bollen, J., Mao, H., & Zeng, X.-J. (2011). Twitter mood predicts the stock market. *Journal of Computational Science, 2*(1), 1–8.
 
+Born, J. A., Myers, D. H., & Clark, W. J. (2017). Trump tweets and the efficient market hypothesis. *Algorithmic Finance, 6*(3–4), 103–109. https://doi.org/10.3233/AF-170211
+
 Breiman, L. (2001). Random forests. *Machine Learning, 45*(1), 5–32.
 
 Jain, S., & Wallace, B. C. (2019). Attention is not explanation. *Proceedings of NAACL-HLT 2019*, 3543–3556.
 
-Ke, Z., Kelly, B., & Xiu, D. (2023). Predicting returns with text data. *Journal of Finance, 78*(5), 3551–3593.
+Ke, Z. T., Kelly, B. T., & Xiu, D. (2019). *Predicting returns with text data* (NBER Working Paper No. 26186). National Bureau of Economic Research. https://doi.org/10.3386/w26186
 
 Loughran, T., & McDonald, B. (2011). When is a liability not a liability? Textual analysis, dictionaries, and 10-K filings. *The Journal of Finance, 66*(1), 35–65.
 
